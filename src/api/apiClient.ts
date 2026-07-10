@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ApiError } from "../utils/apiResponse";
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -16,3 +17,29 @@ apiClient.interceptors.request.use((config) => {
 
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const statusCode = error.response?.status;
+    const data = error.response?.data;
+
+    if (statusCode === 401) {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login";
+      return Promise.reject(
+        new ApiError("Oturum süreniz doldu. Lütfen tekrar giriş yapın.", 401)
+      );
+    }
+
+    const message =
+      data?.errors?.join("\n") ||
+      data?.message ||
+      error.message ||
+      "Beklenmeyen bir hata oluştu.";
+
+    return Promise.reject(
+      new ApiError(message, statusCode, data?.errors ?? [])
+    );
+  }
+);

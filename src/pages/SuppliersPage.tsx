@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Edit, Plus, RefreshCcw, Search, Trash2, X } from "lucide-react";
 
+import { getErrorMessage } from "../utils/apiResponse";
 import PageHeader from "../components/page/PageHeader";
 import Card from "../components/page/Card";
 import DataTable from "../components/table/DataTable";
@@ -9,110 +10,77 @@ import type { DataTableColumn } from "../components/table/DataTable";
 import TextInput from "../components/form/TextInput";
 import SelectInput from "../components/form/SelectInput";
 
-import { parameterValueService } from "../services/parameterService";
+import { supplierService } from "../services/supplierService";
+import type { Supplier } from "../services/supplierService";
 
-import { customerService } from "../services/customerService";
-import type { Customer } from "../services/customerService";
-
-export default function CustomersPage() {
+export default function SuppliersPage() {
   const queryClient = useQueryClient();
 
   const [showCreatePanel, setShowCreatePanel] = useState(false);
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [taxNumber, setTaxNumber] = useState("");
-  const [customerType, setCustomerType] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [name, setName] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
 
   const [globalSearchText, setGlobalSearchText] = useState("");
   const [nameFilter, setNameFilter] = useState("");
-  const [taxNumberFilter, setTaxNumberFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
 
-  const customersQuery = useQuery({
-    queryKey: ["customers"],
-    queryFn: customerService.getList,
-  });
-
-  const parameterValuesQuery = useQuery({
-  queryKey: ["parameterValues"],
-  queryFn: parameterValueService.getList,
+  const suppliersQuery = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: supplierService.getList,
   });
 
   const createMutation = useMutation({
-    mutationFn: customerService.create,
+    mutationFn: supplierService.create,
     onSuccess: async () => {
-      setFirstName("");
-      setLastName("");
-      setCompanyName("");
-      setTaxNumber("");
-      setCustomerType("");
-      setEmail("");
-      setPhoneNumber("");
+      setName("");
+      setContactName("");
+      setContactEmail("");
+      setContactPhone("");
+      setAddress("");
       setCity("");
       setCountry("");
       setShowCreatePanel(false);
 
-      await queryClient.invalidateQueries({ queryKey: ["customers"] });
+      await queryClient.invalidateQueries({ queryKey: ["suppliers"] });
     },
   });
 
-  const customers = customersQuery.data ?? [];
+  const suppliers = suppliersQuery.data ?? [];
 
-  const parameterValues = parameterValuesQuery.data ?? [];
-
-  const customerTypeOptions = parameterValues
-    .filter(
-        (x) =>
-        x.paramType?.toLowerCase().trim() === "customertype" && x.languageId == 1
-    )
-    .map((x) => ({
-        label: x.paramValue,
-        value: String(x.paramCode),
-    }));
-
-  console.log(parameterValues
-    .filter(
-        (x) =>
-        x.paramType?.toLowerCase().trim() === "customertype" && x.languageId == 1
-    ));
-
-  const filteredCustomers = useMemo(() => {
-    let list = [...customers];
+  const filteredSuppliers = useMemo(() => {
+    let list = [...suppliers];
 
     if (globalSearchText.trim()) {
       const search = globalSearchText.toLowerCase();
 
       list = list.filter(
         (x) =>
-          x.fullName?.toLowerCase().includes(search) ||
-          x.companyName?.toLowerCase().includes(search) ||
-          x.taxNumber?.toLowerCase().includes(search) ||
-          x.email?.toLowerCase().includes(search) ||
-          x.phoneNumber?.toLowerCase().includes(search)
+          x.name?.toLowerCase().includes(search) ||
+          x.contactName?.toLowerCase().includes(search) ||
+          x.contactEmail?.toLowerCase().includes(search) ||
+          x.contactPhone?.toLowerCase().includes(search) ||
+          x.city?.toLowerCase().includes(search) ||
+          x.country?.toLowerCase().includes(search)
       );
     }
 
     if (nameFilter.trim()) {
       const search = nameFilter.toLowerCase();
-
-      list = list.filter(
-        (x) =>
-          x.fullName?.toLowerCase().includes(search) ||
-          x.companyName?.toLowerCase().includes(search)
-      );
+      list = list.filter((x) => x.name?.toLowerCase().includes(search));
     }
 
-    if (taxNumberFilter.trim()) {
-      const search = taxNumberFilter.toLowerCase();
-      list = list.filter((x) => x.taxNumber?.toLowerCase().includes(search));
+    if (cityFilter.trim()) {
+      const search = cityFilter.toLowerCase();
+      list = list.filter((x) => x.city?.toLowerCase().includes(search));
     }
 
     if (statusFilter) {
@@ -124,23 +92,21 @@ export default function CustomersPage() {
     list.sort((a, b) => {
       let result = 0;
 
-      if (sortBy === "name") {
-        const aName = a.companyName || a.fullName || "";
-        const bName = b.companyName || b.fullName || "";
-        result = aName.localeCompare(bName, "tr");
+      if (sortBy === "name") result = a.name.localeCompare(b.name, "tr");
+      if (sortBy === "city") result = (a.city || "").localeCompare(b.city || "", "tr");
+      if (sortBy === "country") {
+        result = (a.country || "").localeCompare(b.country || "", "tr");
       }
-
-      if (sortBy === "taxNumber") result = a.taxNumber.localeCompare(b.taxNumber, "tr");
 
       return sortDirection === "asc" ? result : -result;
     });
 
     return list;
   }, [
-    customers,
+    suppliers,
     globalSearchText,
     nameFilter,
-    taxNumberFilter,
+    cityFilter,
     statusFilter,
     sortBy,
     sortDirection,
@@ -149,102 +115,89 @@ export default function CustomersPage() {
   const clearFilters = () => {
     setGlobalSearchText("");
     setNameFilter("");
-    setTaxNumberFilter("");
+    setCityFilter("");
     setStatusFilter("");
     setSortBy("name");
     setSortDirection("asc");
   };
 
-  const createCustomer = (e: React.FormEvent<HTMLFormElement>) => {
+  const createSupplier = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!taxNumber.trim() || !email.trim() || !phoneNumber.trim()) return;
+    if (!name.trim()) return;
 
     createMutation.mutate({
-      firstName: firstName.trim() || null,
-      lastName: lastName.trim() || null,
-      companyName: companyName.trim() || null,
-      taxNumber: taxNumber.trim(),
-      customerType: customerType ? Number(customerType) : null,
-      email: email.trim(),
-      phoneNumber: phoneNumber.trim(),
+      name: name.trim(),
+      contactName: contactName.trim() || null,
+      contactEmail: contactEmail.trim() || null,
+      contactPhone: contactPhone.trim() || null,
+      address: address.trim() || null,
       city: city.trim() || null,
       country: country.trim() || null,
     });
   };
 
-  const columns: DataTableColumn<Customer>[] = [
+  const columns: DataTableColumn<Supplier>[] = [
     {
-      header: "Müşteri",
-      render: (customer) => (
+      header: "Tedarikçi",
+      render: (supplier) => (
         <div>
-          <p className="font-semibold text-slate-800">
-            {customer.companyName || customer.fullName || "-"}
-          </p>
-          <p className="text-xs text-slate-400">ID: {customer.id}</p>
+          <p className="font-semibold text-slate-800">{supplier.name}</p>
+          <p className="text-xs text-slate-400">ID: {supplier.id}</p>
         </div>
       ),
       filter: (
         <input
           className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Müşteri ara..."
+          placeholder="Tedarikçi ara..."
           value={nameFilter}
           onChange={(e) => setNameFilter(e.target.value)}
         />
       ),
     },
     {
-      header: "Vergi/TCKN",
-      render: (customer) => customer.taxNumber,
-      filter: (
-        <input
-          className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="No ara..."
-          value={taxNumberFilter}
-          onChange={(e) => setTaxNumberFilter(e.target.value)}
-        />
-      ),
-    },
-    {
-        header: "Müşteri Tipi",
-        render: (customer) => {
-            const customerTypeName =
-            parameterValues.find(
-                (x) =>
-                x.paramType === "CustomerType" &&
-                String(x.paramCode) === String(customer.customerType)
-            )?.paramValue ?? "-";
-
-            return customerTypeName;
-        },
-        filter: null,
+      header: "Yetkili",
+      render: (supplier) => supplier.contactName || "-",
+      filter: null,
     },
     {
       header: "Email",
-      render: (customer) => customer.email,
+      render: (supplier) => supplier.contactEmail || "-",
       filter: null,
     },
     {
       header: "Telefon",
-      render: (customer) => customer.phoneNumber,
+      render: (supplier) => supplier.contactPhone || "-",
       filter: null,
     },
     {
       header: "Şehir",
-      render: (customer) => customer.city || "-",
+      render: (supplier) => supplier.city || "-",
+      filter: (
+        <input
+          className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Şehir ara..."
+          value={cityFilter}
+          onChange={(e) => setCityFilter(e.target.value)}
+        />
+      ),
+    },
+    {
+      header: "Ülke",
+      render: (supplier) => supplier.country || "-",
       filter: null,
     },
     {
       header: "Durum",
-      render: (customer) => (
+      render: (supplier) => (
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            customer.isActive === false
+            supplier.isActive === false
               ? "bg-red-50 text-red-600"
               : "bg-green-50 text-green-600"
           }`}
         >
-          {customer.isActive === false ? "Pasif" : "Aktif"}
+          {supplier.isActive === false ? "Pasif" : "Aktif"}
         </span>
       ),
       filter: (
@@ -266,6 +219,7 @@ export default function CustomersPage() {
           <button className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100">
             <Edit size={16} />
           </button>
+
           <button className="w-9 h-9 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100">
             <Trash2 size={16} />
           </button>
@@ -278,9 +232,9 @@ export default function CustomersPage() {
   return (
     <div>
       <PageHeader
-        title="Müşteriler"
-        moduleName="Satış"
-        description="Müşteri kayıtlarını görüntüleyin, düzenleyin ve yönetin."
+        title="Tedarikçiler"
+        moduleName="Satın Alma"
+        description="Tedarikçi kayıtlarını görüntüleyin, ekleyin ve yönetin."
         rightContent={
           <div className="flex items-center gap-3">
             <button className="h-11 px-5 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold flex items-center gap-2 hover:bg-slate-50">
@@ -301,11 +255,23 @@ export default function CustomersPage() {
               className="h-11 px-5 rounded-xl bg-indigo-600 text-white font-semibold flex items-center gap-2 hover:bg-indigo-700"
             >
               <Plus size={18} />
-              Yeni Müşteri Ekle
+              Yeni Tedarikçi Ekle
             </button>
           </div>
         }
       />
+
+      {createMutation.isError && (
+        <div className="mb-5 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600 whitespace-pre-line">
+            {getErrorMessage(createMutation.error)}
+        </div>
+        )}
+
+        {suppliersQuery.isError && (
+        <div className="mb-5 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600 whitespace-pre-line">
+            {getErrorMessage(suppliersQuery.error)}
+        </div>
+      )}
 
       <Card className="mb-5 p-5">
         <div className="grid grid-cols-4 gap-4">
@@ -325,8 +291,9 @@ export default function CustomersPage() {
             value={sortBy}
             onChange={setSortBy}
             options={[
-              { label: "Müşteri Adı", value: "name" },
-              { label: "Vergi/TCKN", value: "taxNumber" },
+              { label: "Tedarikçi Adı", value: "name" },
+              { label: "Şehir", value: "city" },
+              { label: "Ülke", value: "country" },
             ]}
           />
 
@@ -348,7 +315,7 @@ export default function CustomersPage() {
               <Search className="absolute right-3 top-3 text-slate-400" size={18} />
               <input
                 className="w-full h-11 border border-slate-200 rounded-xl pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Müşteri, email, telefon..."
+                placeholder="Tedarikçi, yetkili, şehir..."
                 value={globalSearchText}
                 onChange={(e) => setGlobalSearchText(e.target.value)}
               />
@@ -358,10 +325,10 @@ export default function CustomersPage() {
       </Card>
 
       <Card
-        title={`Toplam ${filteredCustomers.length} müşteri bulundu`}
+        title={`Toplam ${filteredSuppliers.length} tedarikçi bulundu`}
         headerRight={
           <button
-            onClick={() => customersQuery.refetch()}
+            onClick={() => suppliersQuery.refetch()}
             className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold flex items-center gap-2 hover:bg-slate-50"
           >
             <RefreshCcw size={17} />
@@ -371,10 +338,10 @@ export default function CustomersPage() {
       >
         <DataTable
           columns={columns}
-          data={filteredCustomers}
-          loading={customersQuery.isLoading || parameterValuesQuery.isLoading}
-          emptyText="Müşteri bulunamadı."
-          totalCount={filteredCustomers.length}
+          data={filteredSuppliers}
+          loading={suppliersQuery.isLoading}
+          emptyText="Tedarikçi bulunamadı."
+          totalCount={filteredSuppliers.length}
         />
       </Card>
 
@@ -383,8 +350,10 @@ export default function CustomersPage() {
           <div className="w-[520px] h-full bg-white shadow-2xl p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Yeni Müşteri</h3>
-                <p className="text-sm text-slate-500">Müşteri bilgilerini girin.</p>
+                <h3 className="text-xl font-bold text-slate-900">
+                  Yeni Tedarikçi
+                </h3>
+                <p className="text-sm text-slate-500">Tedarikçi bilgilerini girin.</p>
               </div>
 
               <button
@@ -395,21 +364,12 @@ export default function CustomersPage() {
               </button>
             </div>
 
-            <form onSubmit={createCustomer} className="space-y-4">
-              <SelectInput
-                label="Müşteri Tipi"
-                value={customerType}
-                onChange={setCustomerType}
-                placeholder="Seçiniz"
-                options={customerTypeOptions}
-              />
-
-              <TextInput label="Ad" value={firstName} onChange={setFirstName} />
-              <TextInput label="Soyad" value={lastName} onChange={setLastName} />
-              <TextInput label="Firma Adı" value={companyName} onChange={setCompanyName} />
-              <TextInput label="Vergi No / TCKN" value={taxNumber} onChange={setTaxNumber} required />
-              <TextInput label="Email" value={email} onChange={setEmail} type="email" required />
-              <TextInput label="Telefon" value={phoneNumber} onChange={setPhoneNumber} required />
+            <form onSubmit={createSupplier} className="space-y-4">
+              <TextInput label="Tedarikçi Adı" value={name} onChange={setName} required />
+              <TextInput label="Yetkili Adı" value={contactName} onChange={setContactName} />
+              <TextInput label="Yetkili Email" value={contactEmail} onChange={setContactEmail} type="email" />
+              <TextInput label="Yetkili Telefon" value={contactPhone} onChange={setContactPhone} />
+              <TextInput label="Adres" value={address} onChange={setAddress} />
               <TextInput label="Şehir" value={city} onChange={setCity} />
               <TextInput label="Ülke" value={country} onChange={setCountry} />
 

@@ -3,6 +3,7 @@ import { extractData } from "../utils/apiResponse";
 
 export interface ParameterDefinition {
   id: number;
+  parameterDefinitionId: number;
   paramType: string;
   description?: string | null;
   dataType?: string | null;
@@ -13,6 +14,7 @@ export interface ParameterDefinition {
 
 export interface ParameterValue {
   id: number;
+  parameterDefinitionId: number;
   paramType: string;
   paramCode: number | string;
   paramValue: string;

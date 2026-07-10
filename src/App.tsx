@@ -6,7 +6,7 @@ import CategoriesPage from "./pages/CategoriesPage";
 import ProductsPage from "./pages/ProductsPage";
 import CustomersPage from "./pages/CustomersPage";
 import ParameterDefinitionsPage from "./pages/ParameterDefinitionsPage";
-// import ParameterValuesPage from "./pages/ParameterValuesPage";
+import SuppliersPage from "./pages/SuppliersPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 
 function ProtectedRoute() {
@@ -30,12 +30,12 @@ export default function App() {
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/parameters" element={<ParameterDefinitionsPage />} />
+        <Route path="/suppliers" element={<SuppliersPage />} />
 
         <Route path="/orders" element={<ComingSoonPage title="Siparişler" />} />
         <Route path="/invoices" element={<ComingSoonPage title="Faturalar" />} />
         <Route path="/payments" element={<ComingSoonPage title="Ödemeler" />} />
         <Route path="/warehouses" element={<ComingSoonPage title="Depolar" />} />
-        <Route path="/suppliers" element={<ComingSoonPage title="Tedarikçiler" />} />
         <Route path="/materials" element={<ComingSoonPage title="Malzemeler" />} />
         <Route path="/supplies" element={<ComingSoonPage title="Tedarikler" />} />
         <Route path="/productions" element={<ComingSoonPage title="Üretim Planları" />} />
