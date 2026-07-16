@@ -1,10 +1,12 @@
 interface TextInputProps {
-  label: string;
+  label?: string;
   value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
+  onChange: (
+    value: string
+  ) => void;
   required?: boolean;
   type?: string;
+  placeholder?: string;
   disabled?: boolean;
 }
 
@@ -30,6 +32,7 @@ export default function TextInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
+        required={required}
         disabled={disabled}
       />
     </div>

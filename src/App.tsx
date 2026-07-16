@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./layout/MainLayout";
 import LoginPage from "./pages/LoginPage";
@@ -31,6 +32,12 @@ function ProtectedRoute() {
 
 export default function App() {
   return (
+    <>
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+      />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
@@ -62,5 +69,6 @@ export default function App() {
         <Route path="/notifications" element={<ComingSoonPage title="Bildirimler" />} />
       </Route>
     </Routes>
+     </>
   );
 }

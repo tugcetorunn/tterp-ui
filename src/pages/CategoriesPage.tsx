@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Edit, Plus, RefreshCcw, Search, Trash2, X } from "lucide-react";
@@ -53,23 +54,43 @@ export default function CategoriesPage() {
     },
   });
 
-  const createCategory = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // const createCategory = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
 
-    setFormError(null);
+  //   setFormError(null);
+
+  // // if (!name.trim()) {
+  // //   setFormError(
+  // //     "Kategori adı zorunludur."
+  // //   );
+  // //   return;
+  // // }
+
+  //   createMutation.mutate({
+  //     name: name.trim(),
+  //     description: description.trim() || null,
+  //   });
+  // };
+
+  const createCategory = (
+  event:
+    React.FormEvent<HTMLFormElement>
+) => {
+  event.preventDefault();
 
   if (!name.trim()) {
-    setFormError(
+    toast.warning(
       "Kategori adı zorunludur."
     );
     return;
   }
 
-    createMutation.mutate({
-      name: name.trim(),
-      description: description.trim() || null,
-    });
-  };
+  createMutation.mutate({
+    name: name.trim(),
+    description:
+      description.trim() || null,
+  });
+};
 
   const closeCreatePanel = () => {
   setShowCreatePanel(false);
@@ -386,13 +407,13 @@ export default function CategoriesPage() {
   </div>
 )}
 
-{createMutation.isError && (
+{/* {createMutation.isError && (
   <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
     {getErrorMessage(
       createMutation.error
     )}
   </div>
-)}
+)} */}
               <TextInput
                 label="Kategori Adı"
                 value={name}
