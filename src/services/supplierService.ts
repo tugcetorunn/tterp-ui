@@ -7,9 +7,17 @@ export interface Supplier {
   contactName?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
-  address?: string | null;
-  city?: string | null;
-  country?: string | null;
+  addressLine?: string | null;
+  countryId?: number | null;
+  countryName?: string | null;
+  cityId?: number | null;
+  cityName?: string | null;
+  townId?: number | null;
+  townName?: string | null;
+  districtId?: number | null;
+  districtName?: string | null;
+  neighborhoodId?: number | null;
+  neighborhoodName?: string | null;
   isActive: boolean;
   isDeleted: boolean;
 }
@@ -19,9 +27,12 @@ export interface CreateSupplierRequest {
   contactName?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
-  address?: string | null;
-  city?: string | null;
-  country?: string | null;
+  addressLine?: string | null;
+  countryId?: number | null;
+  cityId?: number | null;
+  townId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
 }
 
 export const supplierService = {

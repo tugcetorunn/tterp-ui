@@ -2,14 +2,25 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Edit, Plus, RefreshCcw, Search, Trash2, X } from "lucide-react";
 
+import LocationSelector from "../components/location/LocationSelector";
+import LocationFilter from "../components/location/LocationFilter";
+
+import {
+  emptyLocationValue,
+  type LocationValue,
+} from "../types/location";
 import PageHeader from "../components/page/PageHeader";
 import Card from "../components/page/Card";
 import DataTable from "../components/table/DataTable";
 import type { DataTableColumn } from "../components/table/DataTable";
 import TextInput from "../components/form/TextInput";
 import SelectInput from "../components/form/SelectInput";
+import { getErrorMessage } from "../utils/apiResponse";
 
-import { parameterValueService } from "../services/parameterService";
+import { 
+  parameterValueService,
+  type ParameterValue,
+} from "../services/parameterService";
 
 import { customerService } from "../services/customerService";
 import type { Customer } from "../services/customerService";
@@ -26,8 +37,8 @@ export default function CustomersPage() {
   const [customerType, setCustomerType] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
+  const [location, setLocation] = useState<LocationValue>(emptyLocationValue);
+  const [addressLine, setAddressLine] = useState("");
 
   const [globalSearchText, setGlobalSearchText] = useState("");
   const [nameFilter, setNameFilter] = useState("");
@@ -35,15 +46,21 @@ export default function CustomersPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [locationFilter, setLocationFilter] = useState<LocationValue>(emptyLocationValue);
 
   const customersQuery = useQuery({
     queryKey: ["customers"],
-    queryFn: customerService.getList,
+    queryFn: () => customerService.getList()
   });
 
   const parameterValuesQuery = useQuery({
-  queryKey: ["parameterValues"],
-  queryFn: parameterValueService.getList,
+    queryKey: ["parameterValues", 1],
+    queryFn: () =>
+      parameterValueService.getList({
+        isActive: true,
+        isDeleted: false,
+        languageId: 1,
+      }),
   });
 
   const createMutation = useMutation({
@@ -56,8 +73,8 @@ export default function CustomersPage() {
       setCustomerType("");
       setEmail("");
       setPhoneNumber("");
-      setCity("");
-      setCountry("");
+      setAddressLine("");
+      setLocation(emptyLocationValue);
       setShowCreatePanel(false);
 
       await queryClient.invalidateQueries({ queryKey: ["customers"] });
@@ -66,23 +83,43 @@ export default function CustomersPage() {
 
   const customers = customersQuery.data ?? [];
 
-  const parameterValues = parameterValuesQuery.data ?? [];
+  const parameterValues: ParameterValue[] = parameterValuesQuery.data ?? [];
 
-  const customerTypeOptions = parameterValues
-    .filter(
-        (x) =>
-        x.paramType?.toLowerCase().trim() === "customertype" && x.languageId == 1
-    )
-    .map((x) => ({
-        label: x.paramValue,
-        value: String(x.paramCode),
-    }));
+  const customerTypeOptions = useMemo(
+    () =>
+      parameterValues
+        .filter(
+          (value) =>
+            value.paramType
+              .trim()
+              .toLocaleLowerCase("tr-TR") ===
+            "customertype"
+        )
+        .map((value) => ({
+          label: value.paramValue,
+          value: String(value.paramCode),
+        })),
+    [parameterValues]
+  );
 
-  console.log(parameterValues
-    .filter(
-        (x) =>
-        x.paramType?.toLowerCase().trim() === "customertype" && x.languageId == 1
-    ));
+  const customerTypeNameMap = useMemo(
+  () =>
+    new Map(
+      parameterValues
+        .filter(
+          (value) =>
+            value.paramType
+              .trim()
+              .toLocaleLowerCase("tr-TR") ===
+            "customertype"
+        )
+        .map((value) => [
+          String(value.paramCode),
+          value.paramValue,
+        ])
+    ),
+  [parameterValues]
+);
 
   const filteredCustomers = useMemo(() => {
     let list = [...customers];
@@ -96,7 +133,13 @@ export default function CustomersPage() {
           x.companyName?.toLowerCase().includes(search) ||
           x.taxNumber?.toLowerCase().includes(search) ||
           x.email?.toLowerCase().includes(search) ||
-          x.phoneNumber?.toLowerCase().includes(search)
+          x.phoneNumber?.toLowerCase().includes(search) ||
+          x.countryName?.toLocaleLowerCase("tr-TR").includes(search) ||
+          x.cityName?.toLocaleLowerCase("tr-TR").includes(search) ||
+          x.townName?.toLocaleLowerCase("tr-TR").includes(search) ||
+          x.districtName?.toLocaleLowerCase("tr-TR").includes(search) ||
+          x.neighborhoodName?.toLocaleLowerCase("tr-TR").includes(search) ||
+          x.addressLine?.toLocaleLowerCase("tr-TR").includes(search)
       );
     }
 
@@ -113,6 +156,42 @@ export default function CustomersPage() {
     if (taxNumberFilter.trim()) {
       const search = taxNumberFilter.toLowerCase();
       list = list.filter((x) => x.taxNumber?.toLowerCase().includes(search));
+    }
+
+    if (locationFilter.countryId) {
+      list = list.filter(
+        (x) =>
+          String(x.countryId) === locationFilter.countryId
+      );
+    }
+
+    if (locationFilter.cityId) {
+      list = list.filter(
+        (x) =>
+          String(x.cityId) === locationFilter.cityId
+      );
+    }
+
+    if (locationFilter.townId) {
+      list = list.filter(
+        (x) =>
+          String(x.townId) === locationFilter.townId
+      );
+    }
+
+    if (locationFilter.districtId) {
+      list = list.filter(
+        (x) =>
+          String(x.districtId) === locationFilter.districtId
+      );
+    }
+
+    if (locationFilter.neighborhoodId) {
+      list = list.filter(
+        (x) =>
+          String(x.neighborhoodId) ===
+          locationFilter.neighborhoodId
+      );
     }
 
     if (statusFilter) {
@@ -132,6 +211,41 @@ export default function CustomersPage() {
 
       if (sortBy === "taxNumber") result = a.taxNumber.localeCompare(b.taxNumber, "tr");
 
+      if (sortBy === "country") {
+        result = (a.countryName ?? "").localeCompare(
+          b.countryName ?? "",
+          "tr"
+        );
+      }
+
+      if (sortBy === "city") {
+        result = (a.cityName ?? "").localeCompare(
+          b.cityName ?? "",
+          "tr"
+        );
+      }
+
+      if (sortBy === "town") {
+        result = (a.townName ?? "").localeCompare(
+          b.townName ?? "",
+          "tr"
+        );
+      }
+
+      if (sortBy === "district") {
+        result = (a.districtName ?? "").localeCompare(
+          b.districtName ?? "",
+          "tr"
+        );
+      }
+
+      if (sortBy === "neighborhood") {
+        result = (a.neighborhoodName ?? "").localeCompare(
+          b.neighborhoodName ?? "",
+          "tr"
+        );
+      }
+
       return sortDirection === "asc" ? result : -result;
     });
 
@@ -141,6 +255,7 @@ export default function CustomersPage() {
     globalSearchText,
     nameFilter,
     taxNumberFilter,
+    locationFilter,
     statusFilter,
     sortBy,
     sortDirection,
@@ -150,6 +265,7 @@ export default function CustomersPage() {
     setGlobalSearchText("");
     setNameFilter("");
     setTaxNumberFilter("");
+    setLocationFilter(emptyLocationValue);
     setStatusFilter("");
     setSortBy("name");
     setSortDirection("asc");
@@ -168,8 +284,27 @@ export default function CustomersPage() {
       customerType: customerType ? Number(customerType) : null,
       email: email.trim(),
       phoneNumber: phoneNumber.trim(),
-      city: city.trim() || null,
-      country: country.trim() || null,
+      countryId: location.countryId
+        ? Number(location.countryId)
+        : null,
+
+      cityId: location.cityId
+        ? Number(location.cityId)
+        : null,
+
+      townId: location.townId
+        ? Number(location.townId)
+        : null,
+
+      districtId: location.districtId
+        ? Number(location.districtId)
+        : null,
+
+      neighborhoodId: location.neighborhoodId
+        ? Number(location.neighborhoodId)
+        : null,
+
+      addressLine: addressLine.trim() || null,
     });
   };
 
@@ -206,18 +341,14 @@ export default function CustomersPage() {
       ),
     },
     {
-        header: "Müşteri Tipi",
-        render: (customer) => {
-            const customerTypeName =
-            parameterValues.find(
-                (x) =>
-                x.paramType === "CustomerType" &&
-                String(x.paramCode) === String(customer.customerType)
-            )?.paramValue ?? "-";
-
-            return customerTypeName;
-        },
-        filter: null,
+      header: "Müşteri Tipi",
+      render: (customer) =>
+        customer.customerType != null
+          ? customerTypeNameMap.get(
+              String(customer.customerType)
+            ) ?? "-"
+          : "-",
+      filter: null,
     },
     {
       header: "Email",
@@ -230,8 +361,41 @@ export default function CustomersPage() {
       filter: null,
     },
     {
-      header: "Şehir",
-      render: (customer) => customer.city || "-",
+      header: "Lokasyon",
+      render: (customer) => (
+        <div>
+          <p className="font-medium text-slate-700">
+            {[
+              customer.neighborhoodName,
+              customer.districtName,
+              customer.townName,
+              customer.cityName,
+            ]
+              .filter(Boolean)
+              .join(" / ") || "-"}
+          </p>
+
+          {customer.countryName && (
+            <p className="text-xs text-slate-400">
+              {customer.countryName}
+            </p>
+          )}
+        </div>
+      ),
+      filter: null,
+    },
+    {
+      header: "Adres",
+      render: (customer) => (
+        <div className="max-w-[260px]">
+          <p
+            className="text-sm text-slate-600 truncate"
+            title={customer.addressLine || ""}
+          >
+            {customer.addressLine || "-"}
+          </p>
+        </div>
+      ),
       filter: null,
     },
     {
@@ -308,50 +472,69 @@ export default function CustomersPage() {
       />
 
       <Card className="mb-5 p-5">
-        <div className="grid grid-cols-4 gap-4">
-          <SelectInput
-            label="Durum"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            placeholder="Tümü"
-            options={[
-              { label: "Aktif", value: "active" },
-              { label: "Pasif", value: "passive" },
-            ]}
-          />
+        <div className="space-y-5">
+          <LocationFilter
+                            value={locationFilter}
+                            onChange={setLocationFilter}
+                            showCountry={false}
+                          />
 
-          <SelectInput
-            label="Sırala"
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              { label: "Müşteri Adı", value: "name" },
-              { label: "Vergi/TCKN", value: "taxNumber" },
-            ]}
-          />
+          <div className="grid grid-cols-4 gap-4">
+            <SelectInput
+              label="Durum"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="Tümü"
+              options={[
+                { label: "Aktif", value: "active" },
+                { label: "Pasif", value: "passive" },
+              ]}
+            />
 
-          <SelectInput
-            label="Sıralama"
-            value={sortDirection}
-            onChange={setSortDirection}
-            options={[
-              { label: "Artan", value: "asc" },
-              { label: "Azalan", value: "desc" },
-            ]}
-          />
+            <SelectInput
+              label="Sırala"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                { label: "Tedarikçi Adı", value: "name" },
+                { label: "Ülke", value: "country" },
+                { label: "Şehir", value: "city" },
+                { label: "İlçe", value: "town" },
+                { label: "Semt / Bölge", value: "district" },
+                { label: "Mahalle", value: "neighborhood" },
+              ]}
+            />
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Arama
-            </label>
-            <div className="relative">
-              <Search className="absolute right-3 top-3 text-slate-400" size={18} />
-              <input
-                className="w-full h-11 border border-slate-200 rounded-xl pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Müşteri, email, telefon..."
-                value={globalSearchText}
-                onChange={(e) => setGlobalSearchText(e.target.value)}
-              />
+            <SelectInput
+              label="Sıralama"
+              value={sortDirection}
+              onChange={setSortDirection}
+              options={[
+                { label: "Artan", value: "asc" },
+                { label: "Azalan", value: "desc" },
+              ]}
+            />
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Arama
+              </label>
+
+              <div className="relative">
+                <Search
+                  className="absolute right-3 top-3 text-slate-400"
+                  size={18}
+                />
+
+                <input
+                  className="w-full h-11 border border-slate-200 rounded-xl pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Tedarikçi, yetkili, lokasyon..."
+                  value={globalSearchText}
+                  onChange={(e) =>
+                    setGlobalSearchText(e.target.value)
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -410,8 +593,23 @@ export default function CustomersPage() {
               <TextInput label="Vergi No / TCKN" value={taxNumber} onChange={setTaxNumber} required />
               <TextInput label="Email" value={email} onChange={setEmail} type="email" required />
               <TextInput label="Telefon" value={phoneNumber} onChange={setPhoneNumber} required />
-              <TextInput label="Şehir" value={city} onChange={setCity} />
-              <TextInput label="Ülke" value={country} onChange={setCountry} />
+              <LocationSelector
+                              value={location}
+                              onChange={setLocation}
+                              showCountry={false}
+                            />
+
+              <TextInput
+                label="Açık Adres"
+                value={addressLine}
+                onChange={setAddressLine}
+              />
+
+              {createMutation.isError && (
+                <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600">
+                  {getErrorMessage(createMutation.error)}
+                </div>
+              )}
 
               <button
                 disabled={createMutation.isPending}

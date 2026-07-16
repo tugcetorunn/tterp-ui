@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export interface ApiResponse<T> {
   data: T | null;
   isSuccess: boolean;
@@ -44,12 +46,29 @@ export function extractData<T>(response: unknown): T {
 }
 
 export function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+
+    if (
+      responseData &&
+      typeof responseData === "object" &&
+      "message" in responseData &&
+      typeof responseData.message === "string"
+    ) {
+      return responseData.message;
+    }
+
+    if (typeof error.message === "string") {
+      return error.message;
+    }
   }
 
   if (error instanceof Error) {
     return error.message;
+  }
+
+  if (typeof error === "string") {
+    return error;
   }
 
   return "Beklenmeyen bir hata oluştu.";

@@ -11,9 +11,17 @@ export interface Customer {
   customerType?: number | null;
   email: string;
   phoneNumber: string;
-  address?: string | null;
-  city?: string | null;
-  country?: string | null;
+  addressLine?: string | null;
+  countryId?: number | null;
+  cityId?: number | null;
+  townId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  countryName?: string | null;
+  cityName?: string | null;
+  townName?: string | null;
+  districtName?: string | null;
+  neighborhoodName?: string | null;
   createdBy: string;
   createdDate: Date;
   isActive: boolean;
@@ -28,9 +36,12 @@ export interface CreateCustomerRequest {
   customerType?: number | null;
   email: string;
   phoneNumber: string;
-  address?: string | null;
-  city?: string | null;
-  country?: string | null;
+  addressLine?: string | null;
+  countryId?: number | null;
+  cityId?: number | null;
+  townId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
 }
 
 export const customerService = {

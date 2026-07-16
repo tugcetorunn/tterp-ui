@@ -9,6 +9,7 @@ import type { DataTableColumn } from "../components/table/DataTable";
 import TextInput from "../components/form/TextInput";
 import SelectInput from "../components/form/SelectInput";
 import MultiSelect from "../components/form/MultiSelect";
+import { useParameterOptions } from "../hooks/useParameterOptions";
 
 import { productService } from "../services/productService";
 import type { Product } from "../services/productService";
@@ -17,12 +18,17 @@ import { categoryService } from "../services/categoryService";
 export default function ProductsPage() {
   const queryClient = useQueryClient();
 
+  const currencyParameters = useParameterOptions(
+    "Currency",
+    1
+  );
+
   const [showCreatePanel, setShowCreatePanel] = useState(false);
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
-  const [currency, setCurrency] = useState("1");
+  const [currency, setCurrency] = useState("");
   const [price, setPrice] = useState("");
   const [costPrice, setCostPrice] = useState("");
   const [taxRate, setTaxRate] = useState("");
@@ -52,7 +58,7 @@ export default function ProductsPage() {
       setName("");
       setCode("");
       setDescription("");
-      setCurrency("1");
+      setCurrency("");
       setPrice("");
       setCostPrice("");
       setTaxRate("");
@@ -65,6 +71,17 @@ export default function ProductsPage() {
 
   const products = productsQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
+
+  const currencyOptions = useMemo(
+    () =>
+      currencyParameters.data.map((item) => ({
+        label:
+          item.shortCode ??
+          item.paramValue,
+        value: String(item.paramCode),
+      })),
+    [currencyParameters.data]
+  );
 
   const clearFilters = () => {
     setGlobalSearchText("");
@@ -79,7 +96,7 @@ export default function ProductsPage() {
   const createProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!name.trim() || !code.trim() || !categoryId) return;
+    if (!name.trim() || !code.trim() || !categoryId || !currency) return;
 
     createMutation.mutate({
       name: name.trim(),
@@ -284,6 +301,12 @@ export default function ProductsPage() {
         }
       />
 
+      {currencyParameters.isError && (
+        <div className="mb-5 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
+          Para birimleri yüklenemedi.
+        </div>
+      )}
+
       <Card className="mb-5 p-5">
         <div className="grid grid-cols-5 gap-4">
           <MultiSelect
@@ -405,11 +428,13 @@ export default function ProductsPage() {
                 label="Para Birimi"
                 value={currency}
                 onChange={setCurrency}
-                options={[
-                  { label: "TL", value: "1" },
-                  { label: "USD", value: "2" },
-                  { label: "EUR", value: "3" },
-                ]}
+                placeholder={
+                  currencyParameters.isLoading
+                    ? "Para birimleri yükleniyor..."
+                    : "Para birimi seçin"
+                }
+                options={currencyOptions}
+                disabled={currencyParameters.isLoading}
               />
 
               <TextInput label="Satış Fiyatı" value={price} onChange={setPrice} type="number" />

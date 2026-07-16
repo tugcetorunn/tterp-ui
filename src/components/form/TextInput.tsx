@@ -5,6 +5,7 @@ interface TextInputProps {
   placeholder?: string;
   required?: boolean;
   type?: string;
+  disabled?: boolean;
 }
 
 export default function TextInput({
@@ -14,6 +15,7 @@ export default function TextInput({
   placeholder,
   required = false,
   type = "text",
+  disabled = false,
 }: TextInputProps) {
   return (
     <div>
@@ -23,11 +25,12 @@ export default function TextInput({
       </label>
 
       <input
-        className="mt-2 w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+        className="mt-2 w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
+        disabled={disabled}
       />
     </div>
   );

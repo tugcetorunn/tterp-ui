@@ -5,7 +5,7 @@ import {
   FileText,
   CreditCard,
   Package,
-  Tags,
+  PackageSearch,
   Warehouse,
   Truck,
   Factory,
@@ -16,6 +16,11 @@ import {
   Shield,
   Briefcase,
   Megaphone,
+  ArrowLeftRight,
+  ShoppingBag,
+  PackageCheck,
+  Boxes,
+  Repeat2
 } from "lucide-react";
 
 export const menuItems = [
@@ -35,21 +40,54 @@ export const menuItems = [
     ],
   },
   {
-    title: "Ürün & Stok",
-    icon: Package,
-    children: [
-      { title: "Ürünler", path: "/products", icon: Package },
-      { title: "Kategoriler", path: "/categories", icon: Tags },
-      { title: "Depolar", path: "/warehouses", icon: Warehouse },
-    ],
-  },
-  {
     title: "Satın Alma",
     icon: Truck,
     children: [
       { title: "Tedarikçiler", path: "/suppliers", icon: Truck },
       { title: "Malzemeler", path: "/materials", icon: Package },
       { title: "Tedarikler", path: "/supplies", icon: ClipboardList },
+      { title: "Tedarikçi Malzemeleri", path: "/supplierMaterials", icon: PackageSearch },
+    ],
+  },
+  {
+    title: "Stok Yönetimi",
+    icon: Boxes,
+    children: [
+      {
+        title: "Malzeme Stokları",
+        path: "/materialStocks",
+        icon: Boxes,
+      },
+      {
+        title: "Malzeme Stok Hareketleri",
+        path: "/materialStockMovements",
+        icon: ArrowLeftRight,
+      },
+      {
+        title: "Kategoriler",
+        path: "/categories",
+        icon: Package, // değiştir
+      },
+      {
+        title: "Ürünler",
+        path: "/products",
+        icon: ShoppingBag,
+      },
+      {
+        title: "Ürün Stokları",
+        path: "/productStocks",
+        icon: PackageCheck,
+      },
+      {
+        title: "Ürün Stok Hareketleri",
+        path: "/productStockMovements",
+        icon: Repeat2,
+      },
+      {
+        title: "Depolar",
+        path: "/warehouses",
+        icon: Warehouse,
+      },
     ],
   },
   {

@@ -1,4 +1,5 @@
 import { Bell, LogOut, Menu, Moon, Search } from "lucide-react";
+import ExchangeRateTicker from "../components/exchange-rates/ExchangeRateTicker";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
@@ -29,6 +30,10 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-5">
+        <div className="hidden lg:block">
+          <ExchangeRateTicker />
+        </div>
+
         <button className="p-2 rounded-xl hover:bg-slate-100">
           <Moon size={19} />
         </button>
@@ -45,7 +50,7 @@ export default function Header() {
         <div className="h-9 w-px bg-slate-200" />
 
         <div className="text-right">
-          <p className="text-sm font-semibold text-slate-800">Talha Torun</p>
+          <p className="text-sm font-semibold text-slate-800">Tuğçe Torun</p>
           <p className="text-xs text-slate-500">Admin</p>
         </div>
 

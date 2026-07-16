@@ -9,6 +9,9 @@ import DataTable from "../components/table/DataTable";
 import type { DataTableColumn } from "../components/table/DataTable";
 import TextInput from "../components/form/TextInput";
 import SelectInput from "../components/form/SelectInput";
+import {
+  getErrorMessage,
+} from "../utils/apiResponse";
 
 import { categoryService } from "../services/categoryService";
 import type { Category } from "../services/categoryService";
@@ -28,6 +31,9 @@ export default function CategoriesPage() {
   const [sortBy, setSortBy] = useState("createdDate");
   const [sortDirection, setSortDirection] = useState("desc");
 
+  const [formError, setFormError] =
+  useState<string | null>(null);
+  
   const categoriesQuery = useQuery({
     queryKey: ["categories"],
     queryFn: categoryService.getList,
@@ -35,9 +41,13 @@ export default function CategoriesPage() {
 
   const createMutation = useMutation({
     mutationFn: categoryService.create,
+    onMutate: () => {
+    setFormError(null);
+  },
     onSuccess: async () => {
       setName("");
       setDescription("");
+      setFormError(null);
       setShowCreatePanel(false);
       await queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
@@ -46,13 +56,28 @@ export default function CategoriesPage() {
   const createCategory = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!name.trim()) return;
+    setFormError(null);
+
+  if (!name.trim()) {
+    setFormError(
+      "Kategori adı zorunludur."
+    );
+    return;
+  }
 
     createMutation.mutate({
       name: name.trim(),
       description: description.trim() || null,
     });
   };
+
+  const closeCreatePanel = () => {
+  setShowCreatePanel(false);
+  setName("");
+  setDescription("");
+  setFormError(null);
+  createMutation.reset();
+};
 
   const clearFilters = () => {
     setGlobalSearchText("");
@@ -236,7 +261,8 @@ export default function CategoriesPage() {
             </button>
 
             <button
-              onClick={() => setShowCreatePanel(true)}
+              onClick={() => {setFormError(null);
+  createMutation.reset(); setShowCreatePanel(true)}}
               className="h-11 px-5 rounded-xl bg-indigo-600 text-white font-semibold flex items-center gap-2 hover:bg-indigo-700"
             >
               <Plus size={18} />
@@ -245,6 +271,13 @@ export default function CategoriesPage() {
           </div>
         }
       />
+      {categoriesQuery.isError && (
+  <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+    {getErrorMessage(
+      categoriesQuery.error
+    )}
+  </div>
+)}
 
       <Card className="mb-5 p-5">
         <div className="grid grid-cols-5 gap-4">
@@ -339,7 +372,7 @@ export default function CategoriesPage() {
               </div>
 
               <button
-                onClick={() => setShowCreatePanel(false)}
+                onClick={closeCreatePanel}
                 className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center hover:bg-slate-200"
               >
                 <X size={20} />
@@ -347,6 +380,19 @@ export default function CategoriesPage() {
             </div>
 
             <form onSubmit={createCategory} className="space-y-4">
+              {formError && (
+  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-700">
+    {formError}
+  </div>
+)}
+
+{createMutation.isError && (
+  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+    {getErrorMessage(
+      createMutation.error
+    )}
+  </div>
+)}
               <TextInput
                 label="Kategori Adı"
                 value={name}
