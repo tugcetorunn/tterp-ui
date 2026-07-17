@@ -128,6 +128,10 @@ interface InvoiceTarget {
   order: Order;
 }
 
+interface ShippingTarget {
+  order: Order;
+}
+
 interface SelectOption {
   label: string;
   value: string;
@@ -185,6 +189,19 @@ export default function OrdersPage() {
     useState<InvoiceTarget | null>(null);
   const [invoiceDate, setInvoiceDate] = useState(todayInput());
   const [invoiceCurrency, setInvoiceCurrency] = useState("");
+
+  const [shippingTarget, setShippingTarget] =
+  useState<ShippingTarget | null>(null);
+
+  const [
+    selectedShippingTransition,
+    setSelectedShippingTransition,
+  ] = useState<AllowedWorkflowTransition | null>(
+    null
+  );
+
+  const [shippingNote, setShippingNote] =
+    useState("");
 
   // Create form
   const [orderDate, setOrderDate] = useState(todayInput());
@@ -373,6 +390,32 @@ export default function OrdersPage() {
     },
   });
 
+  const changeShippingMutation = useMutation({
+  mutationFn: orderService.changeShippingStatus,
+
+  onSuccess: async (_, variables) => {
+    const changedOrderId = variables.orderId;
+
+    setShippingTarget(null);
+    setSelectedShippingTransition(null);
+    setShippingNote("");
+
+    await queryClient.invalidateQueries({
+      queryKey: ["orders"],
+    });
+
+    const result = await ordersQuery.refetch();
+
+    const updated =
+      result.data?.find(
+        (order) =>
+          order.id === changedOrderId
+      ) ?? null;
+
+    setSelectedOrder(updated);
+  },
+});
+
   const filteredOrders = useMemo(() => {
     let result = [...orders];
 
@@ -548,6 +591,33 @@ export default function OrdersPage() {
     };
   }, [orders]);
 
+  const handleProductChange = (
+  lineId: string,
+  selectedProductId: string
+) => {
+  const selectedProduct = products.find(
+    (product) =>
+      product.id === Number(selectedProductId)
+  );
+
+  setCreateLines((previous) =>
+    previous.map((line) =>
+      line.rowId === lineId
+        ? {
+            ...line,
+            productId: selectedProductId,
+            unitPrice: selectedProduct
+              ? String(selectedProduct.price)
+              : "",
+            taxRate: selectedProduct
+              ? String(selectedProduct.taxRate)
+              : "0",
+          }
+        : line
+    )
+  );
+};
+
   const statusColumns = useMemo(() => {
     if (orderStatuses.data?.length) {
       return [...orderStatuses.data]
@@ -648,6 +718,51 @@ export default function OrdersPage() {
     setSelectedOrder(null);
     setActiveDetailTab("general");
   };
+
+  function StatusInfoRow({
+  label,
+  value,
+  icon,
+  badgeColor = "neutral",
+  tone = "slate",
+}: {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  badgeColor?: string | null;
+  tone?: "slate" | "emerald" | "sky";
+}) {
+  const toneClasses = {
+    slate: "bg-slate-50 text-slate-600",
+    emerald: "bg-emerald-50 text-emerald-600",
+    sky: "bg-sky-50 text-sky-600",
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2">
+      <div className="flex min-w-0 items-center gap-2">
+        <div
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toneClasses[tone]}`}
+        >
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+            {label}
+          </p>
+
+          <div className="mt-1">
+            <StatusBadge
+              text={value}
+              color={badgeColor ?? "neutral"}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   const clearFilters = () => {
     setSelectedCustomerIds([]);
@@ -787,7 +902,6 @@ export default function OrdersPage() {
       orderItems: validLines.map((line) => ({
         productId: Number(line.productId),
         quantity: toNumber(line.quantity),
-        unitPrice: toNumber(line.unitPrice),
         discount: toNumber(line.discount),
         stockAllocations: line.allocations
           .filter(
@@ -886,6 +1000,19 @@ export default function OrdersPage() {
     createInvoiceMutation.reset();
   };
 
+  const openShippingDialog = (order: Order) => {
+    setShippingTarget({ order });
+    setSelectedShippingTransition(null);
+    setShippingNote("");
+  };
+
+  const closeShippingDialog = () => {
+  setShippingTarget(null);
+  setSelectedShippingTransition(null);
+  setShippingNote("");
+  changeShippingMutation.reset();
+};
+
   const submitInvoice = () => {
     if (!invoiceTarget || !invoiceDate || !invoiceCurrency) {
       return;
@@ -897,6 +1024,26 @@ export default function OrdersPage() {
       currency: Number(invoiceCurrency),
     });
   };
+
+  const submitShippingStatus = () => {
+  if (
+    !shippingTarget ||
+    !selectedShippingTransition
+  ) {
+    return;
+  }
+
+  changeShippingMutation.mutate({
+    orderId: shippingTarget.order.id,
+
+    targetShippingStatusCode:
+      selectedShippingTransition
+        .targetStatusCode,
+
+    note:
+      shippingNote.trim() || null,
+  });
+};
 
   const handleDragEnd = (event: DragEndEvent) => {
     const orderId = Number(event.active.id);
@@ -963,25 +1110,44 @@ export default function OrdersPage() {
       filter: null,
     },
     {
-      header: "Durumlar",
-      render: (order) => (
-        <div className="flex min-w-[170px] flex-col items-start gap-2">
-          <StatusBadge
-            text={order.orderStatusName ?? "Tanımsız"}
-            color={order.orderStatusBadgeColor ?? "neutral"}
-          />
+  header: "Durumlar",
+  render: (order) => (
+    <div className="min-w-[220px] space-y-2">
+      <StatusInfoRow
+        label="Sipariş"
+        value={order.orderStatusName ?? "Tanımsız"}
+        badgeColor={
+          order.orderStatusBadgeColor ?? "neutral"
+        }
+        icon={<ClipboardList size={15} />}
+        tone="slate"
+      />
 
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            {order.paymentStatusName ?? "Ödeme Tanımsız"}
-          </span>
+      <StatusInfoRow
+        label="Ödeme"
+        value={
+          order.paymentStatusName ??
+          "Ödeme Tanımsız"
+        }
+        badgeColor="success"
+        icon={<CreditCard size={15} />}
+        tone="emerald"
+      />
 
-          <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-            {order.shippingStatusName ?? "Teslimat Tanımsız"}
-          </span>
-        </div>
-      ),
-      filter: null,
-    },
+      <StatusInfoRow
+        label="Nakliye"
+        value={
+          order.shippingStatusName ??
+          "Nakliye Tanımsız"
+        }
+        badgeColor="info"
+        icon={<Truck size={15} />}
+        tone="sky"
+      />
+    </div>
+  ),
+  filter: null,
+},
     {
       header: "Sipariş Özeti",
       render: (order) => (
@@ -1040,31 +1206,57 @@ export default function OrdersPage() {
       header: "İşlemler",
       render: (order) => (
         <div className="flex min-w-[210px] flex-wrap items-center gap-2">
-          <button
-            type="button"
-            title="Detay"
-            onClick={() => openDetail(order)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100"
-          >
-            <Eye size={16} />
-          </button>
+  <button
+    type="button"
+    title="Detay"
+    onClick={() => openDetail(order)}
+    className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100"
+  >
+    <Eye size={16} />
+  </button>
 
-          <button
-            type="button"
-            onClick={() => openPaymentDialog(order)}
-            className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
-          >
-            Ödeme
-          </button>
+  <button
+    type="button"
+    disabled={!order.canTakePayment}
+    onClick={() => openPaymentDialog(order)}
+    title={
+      order.canTakePayment
+        ? "Ödeme al"
+        : "Ödeme için sipariş onaylanmalıdır."
+    }
+    className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    Ödeme Al
+  </button>
 
-          <button
-            type="button"
-            onClick={() => openInvoiceDialog(order)}
-            className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
-          >
-            Fatura
-          </button>
-        </div>
+  <button
+    type="button"
+    disabled={!order.canCreateInvoice}
+    onClick={() => openInvoiceDialog(order)}
+    title={
+      order.canCreateInvoice
+        ? "Fatura oluştur"
+        : "Fatura için sipariş onaylanmalı ve ödeme alınmalıdır."
+    }
+    className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    Fatura
+  </button>
+
+  <button
+    type="button"
+    disabled={!order.canChangeShipping}
+    onClick={() => openShippingDialog(order)}
+    title={
+      order.canChangeShipping
+        ? "Nakliye durumunu değiştir"
+        : "Nakliye için sipariş onaylanmalıdır."
+    }
+    className="rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    Nakliye
+  </button>
+</div>
       ),
       filter: null,
     },
@@ -1365,6 +1557,7 @@ export default function OrdersPage() {
                   productOptions={productOptions}
                   warehouseOptions={warehouseOptions}
                   productName={getOptionLabel(productOptions, line.productId)}
+                  onProductChange={handleProductChange}
                   onUpdate={updateOrderLine}
                   onRemove={removeOrderLine}
                   onAddAllocation={addAllocation}
@@ -1542,7 +1735,14 @@ export default function OrdersPage() {
         headerRight={
           selectedOrder ? (
             <div className="flex flex-wrap justify-end gap-2">
-              {selectedOrder.allowedTransitions?.map((transition) => (
+              {selectedOrder.allowedTransitions
+                    ?.filter(
+                      (transition) =>
+                        normalize(
+                          transition.statusShortCode ?? ""
+                        ) !== "completed"
+                    )
+                    .map((transition) => (
                 <button
                   key={transition.targetStatusCode}
                   type="button"
@@ -1608,6 +1808,7 @@ export default function OrdersPage() {
                 payments={payments}
                 loading={paymentsQuery.isLoading}
                 error={paymentsQuery.error}
+                canAdd={selectedOrder.canTakePayment}
                 onAdd={() => openPaymentDialog(selectedOrder)}
               />
             )}
@@ -1618,6 +1819,7 @@ export default function OrdersPage() {
                 invoices={invoices}
                 loading={invoicesQuery.isLoading}
                 error={invoicesQuery.error}
+                canAdd={selectedOrder.canCreateInvoice}
                 onAdd={() => openInvoiceDialog(selectedOrder)}
               />
             )}
@@ -1798,6 +2000,105 @@ export default function OrdersPage() {
           />
         </div>
       </ConfirmDialog>
+      <ConfirmDialog
+  open={Boolean(shippingTarget)}
+  title="Nakliye Durumunu Değiştir"
+  description={
+    shippingTarget
+      ? `${getOrderNumber(
+          shippingTarget.order.id
+        )} siparişinin nakliye durumunu seçin.`
+      : ""
+  }
+  confirmText="Nakliye Durumunu Güncelle"
+  cancelText="İptal"
+  loading={changeShippingMutation.isPending}
+  variant="primary"
+  onCancel={closeShippingDialog}
+  onConfirm={submitShippingStatus}
+>
+  {changeShippingMutation.isError && (
+    <ErrorBox
+      error={changeShippingMutation.error}
+    />
+  )}
+
+  {shippingTarget && (
+    <div className="space-y-4">
+      <div className="rounded-2xl bg-sky-50 p-4">
+        <p className="text-xs font-semibold text-sky-500">
+          Mevcut Nakliye Durumu
+        </p>
+
+        <p className="mt-1 font-black text-sky-800">
+          {shippingTarget.order
+            .shippingStatusName ??
+            "Tanımsız"}
+        </p>
+      </div>
+
+      <div>
+        <p className="mb-2 text-sm font-semibold text-slate-700">
+          Yeni Durum
+        </p>
+
+        <div className="space-y-2">
+          {shippingTarget.order
+            .allowedShippingTransitions
+            ?.map((transition) => {
+              const selected =
+                selectedShippingTransition
+                  ?.targetStatusCode ===
+                transition.targetStatusCode;
+
+              return (
+                <button
+                  key={
+                    transition.targetStatusCode
+                  }
+                  type="button"
+                  onClick={() =>
+                    setSelectedShippingTransition(
+                      transition
+                    )
+                  }
+                  className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left ${
+                    selected
+                      ? "border-sky-500 bg-sky-50 text-sky-800"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-bold">
+                    {transition.buttonText ??
+                      transition.actionName}
+                  </span>
+
+                  <span className="text-xs">
+                    {transition.statusName}
+                  </span>
+                </button>
+              );
+            })}
+        </div>
+
+        {shippingTarget.order
+          .allowedShippingTransitions
+          ?.length === 0 && (
+          <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+            Bu nakliye durumundan yapılabilecek bir geçiş bulunmuyor.
+          </p>
+        )}
+      </div>
+
+      <TextInput
+        label="İşlem Notu"
+        value={shippingNote}
+        onChange={setShippingNote}
+        placeholder="İsteğe bağlı açıklama..."
+      />
+    </div>
+  )}
+</ConfirmDialog>
     </div>
   );
 }
@@ -2035,14 +2336,21 @@ function OrderWorkflowTab({ order }: { order: Order }) {
           />
 
           <div className="flex flex-wrap gap-2">
-            {order.allowedTransitions?.map((transition) => (
-              <span
-                key={transition.targetStatusCode}
-                className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700"
-              >
-                {transition.actionName}
-              </span>
-            ))}
+            {order.allowedTransitions
+              ?.filter(
+                (transition) =>
+                  normalize(
+                    transition.statusShortCode ?? ""
+                  ) !== "completed"
+              )
+              .map((transition) => (
+                <span
+                  key={transition.targetStatusCode}
+                  className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700"
+                >
+                  {transition.actionName}
+                </span>
+              ))}
           </div>
         </div>
       </Card>
@@ -2077,12 +2385,14 @@ function OrderPaymentsTab({
   payments,
   loading,
   error,
+  canAdd,
   onAdd,
 }: {
   order: Order;
   payments: Payment[];
   loading: boolean;
   error: unknown;
+  canAdd: boolean;
   onAdd: () => void;
 }) {
   const paid = payments
@@ -2103,7 +2413,13 @@ function OrderPaymentsTab({
           <button
             type="button"
             onClick={onAdd}
-            className="flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700"
+            disabled={!canAdd}
+            title={
+              canAdd
+                ? "Yeni ödeme ekle"
+                : "Ödeme için sipariş onaylanmalıdır."
+            }
+            className="flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus size={16} />
             Yeni Ödeme
@@ -2170,7 +2486,8 @@ function OrderPaymentsTab({
             <button
               type="button"
               onClick={onAdd}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
+              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={!canAdd}
             >
               İlk Ödemeyi Ekle
             </button>
@@ -2186,12 +2503,14 @@ function OrderInvoicesTab({
   invoices,
   loading,
   error,
+  canAdd,
   onAdd,
 }: {
   order: Order;
   invoices: Invoice[];
   loading: boolean;
   error: unknown;
+  canAdd: boolean;
   onAdd: () => void;
 }) {
   return (
@@ -2202,7 +2521,13 @@ function OrderInvoicesTab({
           <button
             type="button"
             onClick={onAdd}
-            className="flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700"
+            disabled={!canAdd}
+            title={
+              canAdd
+                ? "Fatura oluştur"
+                : "Fatura için sipariş onaylanmalı ve ödeme alınmalıdır."
+            }
+            className="flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus size={16} />
             Fatura Oluştur
@@ -2460,13 +2785,23 @@ function OrderBoardCard({
         </div>
 
         <div className="mt-4 space-y-2">
-          <span className="block rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
-            {order.paymentStatusName ?? "Ödeme Tanımsız"}
-          </span>
+          <CompactStatusRow
+  label="Ödeme"
+  value={
+    order.paymentStatusName ?? "Tanımsız"
+  }
+  icon={<CreditCard size={14} />}
+  className="bg-emerald-50 text-emerald-700"
+/>
 
-          <span className="block rounded-xl bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700">
-            {order.shippingStatusName ?? "Teslimat Tanımsız"}
-          </span>
+<CompactStatusRow
+  label="Nakliye"
+  value={
+    order.shippingStatusName ?? "Tanımsız"
+  }
+  icon={<Truck size={14} />}
+  className="bg-sky-50 text-sky-700"
+/>
         </div>
 
         <button
@@ -2523,6 +2858,7 @@ function CreateProductCard({
   productOptions,
   warehouseOptions,
   productName,
+  onProductChange,
   onUpdate,
   onRemove,
   onAddAllocation,
@@ -2534,6 +2870,11 @@ function CreateProductCard({
   productOptions: SelectOption[];
   warehouseOptions: SelectOption[];
   productName: string;
+  onProductChange: (
+    lineId: string,
+    productId: string
+  ) => void;
+
   onUpdate: (
     rowId: string,
     field: keyof Omit<CreateOrderLine, "rowId" | "allocations">,
@@ -2602,7 +2943,9 @@ function CreateProductCard({
               <SelectInput
                 label="Ürün"
                 value={line.productId}
-                onChange={(value) => onUpdate(line.rowId, "productId", value)}
+                onChange={(value) =>
+                  onProductChange(line.rowId, value)
+                }
                 placeholder="Ürün seçin"
                 options={productOptions}
               />
@@ -2620,6 +2963,7 @@ function CreateProductCard({
               value={line.unitPrice}
               onChange={(value) => onUpdate(line.rowId, "unitPrice", value)}
               type="number"
+              disabled
             />
 
             <TextInput
@@ -2636,6 +2980,7 @@ function CreateProductCard({
               value={line.taxRate}
               onChange={(value) => onUpdate(line.rowId, "taxRate", value)}
               type="number"
+              disabled
             />
           </div>
 
@@ -3040,6 +3385,36 @@ function DetailItem({
   );
 }
 
+function CompactStatusRow({
+  label,
+  value,
+  icon,
+  className,
+}: {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  className: string;
+}) {
+  return (
+    <div
+      className={`flex items-center justify-between rounded-xl px-3 py-2 ${className}`}
+    >
+      <div className="flex items-center gap-2">
+        {icon}
+
+        <span className="text-xs font-semibold opacity-70">
+          {label}
+        </span>
+      </div>
+
+      <span className="text-xs font-black">
+        {value}
+      </span>
+    </div>
+  );
+}
+
 function EmptyState({
   icon,
   title,
@@ -3088,6 +3463,52 @@ function ErrorBox({ error }: { error: unknown }) {
     </div>
   );
 }
+
+const normalizeCode = (
+  value?: string | null
+) => value?.trim().toLowerCase() ?? "";
+
+const canTakePayment = (order: Order) =>
+  normalizeCode(
+    order.orderStatusShortCode
+  ) === "approved" &&
+  (order.remainingAmount ?? 0) > 0;
+
+const canCreateInvoice = (order: Order) => {
+  const status =
+    normalizeCode(
+      order.orderStatusShortCode
+    );
+
+  const canInvoiceStatus =
+    status === "approved" ||
+    status === "completed";
+
+  const paidAmount =
+    order.paidAmount ?? 0;
+
+  const invoicedAmount =
+    order.invoicedAmount ?? 0;
+
+  return (
+    canInvoiceStatus &&
+    paidAmount > invoicedAmount
+  );
+};
+
+const canChangeShipping = (
+  order: Order
+) => {
+  const status =
+    normalizeCode(
+      order.orderStatusShortCode
+    );
+
+  return (
+    status === "approved" ||
+    status === "completed"
+  );
+};
 
 function getOrderNumber(id: number) {
   return `SO-${String(id).padStart(6, "0")}`;

@@ -90,7 +90,17 @@ export interface Order {
   discount: number;
   finalAmount: number;
 
+  paidAmount: number
+  remainingAmount: number
+  invoicedAmount: number
+
+  canTakePayment: boolean;
+  canCreateInvoice: boolean;
+  canChangeShipping: boolean;
+
+
   allowedTransitions: AllowedWorkflowTransition[];
+  allowedShippingTransitions: AllowedWorkflowTransition[];
   actions: WorkflowActionPermissions;
   orderItems: OrderItem[];
   workflowHistories: WorkflowHistory[];
@@ -107,7 +117,6 @@ export interface OrderItemStockAllocationRequest {
 export interface CreateOrderItemRequest {
   productId: number;
   quantity: number;
-  unitPrice?: number | null;
   discount: number;
   stockAllocations: OrderItemStockAllocationRequest[];
 }
@@ -127,6 +136,12 @@ export interface AddOrderItemRequest
 export interface ChangeOrderStatusRequest {
   orderId: number;
   targetStatusCode: number;
+  note?: string | null;
+}
+
+export interface ChangeShippingStatusRequest {
+  orderId: number;
+  targetShippingStatusCode: number;
   note?: string | null;
 }
 
@@ -179,4 +194,16 @@ export const orderService = {
 
     return extractData<number>(response);
   },
+
+  
+    async changeShippingStatus(
+    data: ChangeShippingStatusRequest
+    ): Promise<number> {
+    const response = await apiClient.post(
+        "/Orders/ChangeShippingStatus",
+        data
+    );
+
+    return extractData<number>(response);
+    }
 };

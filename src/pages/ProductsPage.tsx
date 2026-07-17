@@ -104,7 +104,6 @@ export default function ProductsPage() {
       description: description.trim() || null,
       currency: Number(currency),
       price: Number(price || 0),
-      costPrice: Number(costPrice || 0),
       taxRate: Number(taxRate || 0),
       categoryId: Number(categoryId),
     });
@@ -212,7 +211,7 @@ export default function ProductsPage() {
     {
       header: "Maliyet",
       render: (product) =>
-        `${product.costPrice.toLocaleString("tr-TR")} ${product.currencyName ?? ""}`,
+        `${product.costPrice!.toLocaleString("tr-TR")} ${product.currencyName ?? ""}`,
       filter: null,
     },
     {

@@ -308,7 +308,7 @@ export default function MaterialsPage() {
       }
 
       if (sortBy === "costPrice") {
-        result = first.costPrice - second.costPrice;
+        result = first.averageCost! - second.averageCost!;
       }
 
       if (sortBy === "stockQuantity") {
@@ -424,11 +424,20 @@ export default function MaterialsPage() {
       filter: null,
     },
     {
+      header: "Ortalama Maliyet",
+      render: (material) =>
+        material.averageCost!.toLocaleString("tr-TR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 4,
+        }),
+      filter: null,
+    },
+    {
       header: "Son Maliyet",
       render: (material) =>
-        material.costPrice.toLocaleString("tr-TR", {
+        material.lastPurchasePrice!.toLocaleString("tr-TR", {
           minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
+          maximumFractionDigits: 4,
         }),
       filter: null,
     },
@@ -916,11 +925,21 @@ export default function MaterialsPage() {
                     />
 
                     <DetailItem
-                      label="Son Maliyet"
-                      value={selectedMaterial.costPrice.toLocaleString(
+                      label="Ortalama Maliyet"
+                      value={selectedMaterial.averageCost!.toLocaleString(
                         "tr-TR",
                         {
-                          minimumFractionDigits: 2,
+                          minimumFractionDigits: 4,
+                        }
+                      )}
+                    />
+
+                    <DetailItem
+                      label="Son Maliyet"
+                      value={selectedMaterial.lastPurchasePrice!.toLocaleString(
+                        "tr-TR",
+                        {
+                          minimumFractionDigits: 4,
                         }
                       )}
                     />

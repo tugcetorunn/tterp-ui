@@ -8,7 +8,8 @@ export interface Material {
   description?: string | null;
   unit: number;
   unitName?: string | null;
-  costPrice: number;
+  averageCost?: number | null;
+  lastPurchasePrice?: number | null;
   taxRate: number;
   stockQuantity: number;
   supplierCount: number;

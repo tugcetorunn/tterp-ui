@@ -9,7 +9,7 @@ export interface Product {
   currency: number;
   currencyName: string;
   price: number;
-  costPrice: number;
+  costPrice?: number | null;
   taxRate: number;
   stockQuantity: number;
   categoryId: number;
@@ -24,7 +24,6 @@ export interface CreateProductRequest {
   description?: string | null;
   currency: number;
   price: number;
-  costPrice: number;
   taxRate: number;
   categoryId: number;
 }
