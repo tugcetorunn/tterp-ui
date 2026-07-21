@@ -203,17 +203,6 @@ export default function MaterialWarehousesPage() {
     resetCreateForm();
   };
 
-  const clearFilters = () => {
-    setSelectedMaterialIds([]);
-    setSelectedWarehouseIds([]);
-    setSelectedReasonCodes([]);
-    setMovementTypeFilter("");
-    setReservationStatusFilter("");
-    setGlobalSearchText("");
-    setSortBy("transactionDate");
-    setSortDirection("desc");
-  };
-
   const submitMovement = (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -612,15 +601,6 @@ export default function MaterialWarehousesPage() {
 
             <button
               type="button"
-              onClick={clearFilters}
-              className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <X size={18} />
-              Filtreleri Temizle
-            </button>
-
-            <button
-              type="button"
               onClick={() =>
                 setShowCreateDrawer(true)
               }
@@ -641,182 +621,205 @@ export default function MaterialWarehousesPage() {
         </div>
       )}
 
-      <Card className="mb-5 p-5">
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <MultiSelect
-              label="Malzemeler"
-              values={selectedMaterialIds}
-              onChange={
-                setSelectedMaterialIds
-              }
-              placeholder="Malzeme seçin"
-              options={materialOptions}
-            />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="w-[150px]">
+      <MultiSelect
+        label="Malzeme"
+        values={selectedMaterialIds}
+        onChange={setSelectedMaterialIds}
+        placeholder="Malzeme"
+        options={materialOptions}
+      />
+    </div>
 
-            <MultiSelect
-              label="Depolar"
-              values={selectedWarehouseIds}
-              onChange={
-                setSelectedWarehouseIds
-              }
-              placeholder="Depo seçin"
-              options={warehouseOptions}
-            />
+    <div className="w-[140px]">
+      <MultiSelect
+        label="Depo"
+        values={selectedWarehouseIds}
+        onChange={setSelectedWarehouseIds}
+        placeholder="Depo"
+        options={warehouseOptions}
+      />
+    </div>
 
-            <MultiSelect
-              label="Hareket Nedenleri"
-              values={selectedReasonCodes}
-              onChange={
-                setSelectedReasonCodes
-              }
-              placeholder="Neden seçin"
-              options={reasonOptions}
-            />
-          </div>
+    <div className="w-[155px]">
+      <MultiSelect
+        label="Hareket Nedeni"
+        values={selectedReasonCodes}
+        onChange={setSelectedReasonCodes}
+        placeholder="Neden"
+        options={reasonOptions}
+      />
+    </div>
 
-          <div className="grid grid-cols-5 gap-4">
-            <SelectInput
-              label="Kayıt Tipi"
-              value={movementTypeFilter}
-              onChange={(value) =>
-                setMovementTypeFilter(
-                  value as MovementTypeFilter
-                )
-              }
-              placeholder="Tümü"
-              options={[
-                {
-                  label: "Giriş",
-                  value: "entry",
-                },
-                {
-                  label: "Çıkış",
-                  value: "exit",
-                },
-                {
-                  label: "Rezervasyon",
-                  value: "reservation",
-                },
-              ]}
-            />
-
-            <SelectInput
-              label="Rezervasyon Durumu"
-              value={
-                reservationStatusFilter
-              }
-              onChange={
-                setReservationStatusFilter
-              }
-              placeholder="Tümü"
-              options={[
-                {
-                  label: "Aktif",
-                  value: "active",
-                },
-                {
-                  label: "Kapandı",
-                  value: "released",
-                },
-              ]}
-            />
-
-            <SelectInput
-              label="Sırala"
-              value={sortBy}
-              onChange={setSortBy}
-              options={[
-                {
-                  label: "Tarih",
-                  value: "transactionDate",
-                },
-                {
-                  label: "Malzeme",
-                  value: "materialName",
-                },
-                {
-                  label: "Depo",
-                  value: "warehouseName",
-                },
-                {
-                  label: "Miktar",
-                  value: "quantity",
-                },
-              ]}
-            />
-
-            <SelectInput
-              label="Sıralama"
-              value={sortDirection}
-              onChange={setSortDirection}
-              options={[
-                {
-                  label: "Artan",
-                  value: "asc",
-                },
-                {
-                  label: "Azalan",
-                  value: "desc",
-                },
-              ]}
-            />
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Arama
-              </label>
-
-              <div className="relative">
-                <Search
-                  className="absolute right-3 top-3 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  className="h-11 w-full rounded-xl border border-slate-200 pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Malzeme, depo, işlem..."
-                  value={globalSearchText}
-                  onChange={(event) =>
-                    setGlobalSearchText(
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card
-        title={`Toplam ${filteredRecords.length} kayıt bulundu`}
-        headerRight={
-          <button
-            type="button"
-            onClick={() =>
-              timelineQuery.refetch()
-            }
-            className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            <RefreshCcw size={17} />
-            Yenile
-          </button>
+    <div className="w-[130px]">
+      <SelectInput
+        label="Kayıt Tipi"
+        value={movementTypeFilter}
+        onChange={(value) =>
+          setMovementTypeFilter(
+            value as MovementTypeFilter
+          )
         }
-      >
-        <DataTable<MaterialStockTimelineItem>
-          columns={columns}
-          data={filteredRecords}
-          loading={
-            timelineQuery.isLoading ||
-            materialsQuery.isLoading ||
-            warehousesQuery.isLoading ||
-            reasonParameters.isLoading
-          }
-          emptyText="Stok hareketi veya rezervasyon bulunamadı."
-          totalCount={filteredRecords.length}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "Giriş",
+            value: "entry",
+          },
+          {
+            label: "Çıkış",
+            value: "exit",
+          },
+          {
+            label: "Rezervasyon",
+            value: "reservation",
+          },
+        ]}
+      />
+    </div>
+
+    <div className="w-[145px]">
+      <SelectInput
+        label="Rezervasyon"
+        value={reservationStatusFilter}
+        onChange={setReservationStatusFilter}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "Aktif",
+            value: "active",
+          },
+          {
+            label: "Kapandı",
+            value: "released",
+          },
+        ]}
+      />
+    </div>
+
+    <div className="w-[135px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Tarih",
+            value: "transactionDate",
+          },
+          {
+            label: "Malzeme",
+            value: "materialName",
+          },
+          {
+            label: "Depo",
+            value: "warehouseName",
+          },
+          {
+            label: "Miktar",
+            value: "quantity",
+          },
+        ]}
+      />
+    </div>
+
+    <div className="w-[105px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Artan",
+            value: "asc",
+          },
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+        ]}
+      />
+    </div>
+
+    <div className="w-[120px]">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
+
+      <div className="relative">
+        <Search
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          size={17}
         />
-      </Card>
+
+        <input
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          placeholder="Ara..."
+          value={globalSearchText}
+          onChange={(event) =>
+            setGlobalSearchText(event.target.value)
+          }
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedMaterialIds([]);
+        setSelectedWarehouseIds([]);
+        setSelectedReasonCodes([]);
+        setMovementTypeFilter("");
+        setReservationStatusFilter("");
+        setSortBy("transactionDate");
+        setSortDirection("desc");
+        setGlobalSearchText("");
+      }}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => timelineQuery.refetch()}
+      disabled={timelineQuery.isFetching}
+      title="Stok hareketlerini yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          timelineQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
+
+<Card
+  title={`Toplam ${filteredRecords.length} kayıt bulundu`}
+>
+  <DataTable<MaterialStockTimelineItem>
+    columns={columns}
+    data={filteredRecords}
+    loading={
+      timelineQuery.isLoading ||
+      materialsQuery.isLoading ||
+      warehousesQuery.isLoading ||
+      reasonParameters.isLoading
+    }
+    emptyText="Stok hareketi veya rezervasyon bulunamadı."
+    totalCount={filteredRecords.length}
+  />
+</Card>
 
       <CreateDrawer
         open={showCreateDrawer}

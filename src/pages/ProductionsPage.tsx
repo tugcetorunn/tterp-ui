@@ -1114,135 +1114,154 @@ const canAddProgress = (
         </div>
       )}
 
-      <Card className="mb-5 p-5">
-        <div className="grid grid-cols-3 gap-4">
-          <MultiSelect
-            label="Ürünler"
-            values={selectedProductIds}
-            onChange={setSelectedProductIds}
-            placeholder="Ürün seçin"
-            options={productOptions}
-          />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="w-[155px]">
+      <MultiSelect
+        label="Ürün"
+        values={selectedProductIds}
+        onChange={setSelectedProductIds}
+        placeholder="Ürün"
+        options={productOptions}
+      />
+    </div>
 
-          <MultiSelect
-            label="Durumlar"
-            values={selectedStatusCodes}
-            onChange={
-              setSelectedStatusCodes
-            }
-            placeholder="Durum seçin"
-            options={
-              productionStatuses.options
-            }
-          />
+    <div className="w-[145px]">
+      <MultiSelect
+        label="Durum"
+        values={selectedStatusCodes}
+        onChange={setSelectedStatusCodes}
+        placeholder="Durum"
+        options={productionStatuses.options}
+      />
+    </div>
 
-          <MultiSelect
-            label="Hedef Depolar"
-            values={selectedWarehouseIds}
-            onChange={
-              setSelectedWarehouseIds
-            }
-            placeholder="Depo seçin"
-            options={warehouseOptions}
-          />
-        </div>
+    <div className="w-[155px]">
+      <MultiSelect
+        label="Hedef Depo"
+        values={selectedWarehouseIds}
+        onChange={setSelectedWarehouseIds}
+        placeholder="Depo"
+        options={warehouseOptions}
+      />
+    </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-4">
-          <SelectInput
-            label="Sırala"
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              {
-                label: "Üretim Tarihi",
-                value: "productionDate",
-              },
-              {
-                label: "Ürün",
-                value: "productName",
-              },
-              {
-                label: "Planlanan Miktar",
-                value: "plannedQuantity",
-              },
-              {
-                label: "Gerçekleşen Miktar",
-                value: "actualQuantity",
-              },
-            ]}
-          />
+    <div className="w-[165px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Üretim Tarihi",
+            value: "productionDate",
+          },
+          {
+            label: "Ürün",
+            value: "productName",
+          },
+          {
+            label: "Planlanan Miktar",
+            value: "plannedQuantity",
+          },
+          {
+            label: "Gerçekleşen Miktar",
+            value: "actualQuantity",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Sıralama"
-            value={sortDirection}
-            onChange={setSortDirection}
-            options={[
-              {
-                label: "Artan",
-                value: "asc",
-              },
-              {
-                label: "Azalan",
-                value: "desc",
-              },
-            ]}
-          />
+    <div className="w-[110px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Artan",
+            value: "asc",
+          },
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+        ]}
+      />
+    </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Arama
-            </label>
+    <div className="w-[120px]">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
 
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute right-3 top-3 text-slate-400"
-              />
+      <div className="relative">
+        <Search
+          size={17}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+        />
 
-              <input
-                value={searchText}
-                onChange={(event) =>
-                  setSearchText(
-                    event.target.value
-                  )
-                }
-                placeholder="Ürün, depo veya durum..."
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {viewMode === "list" && (
-        <Card
-          title={`Toplam ${filteredProductions.length} üretim kaydı`}
-          headerRight={
-            <button
-              type="button"
-              onClick={() =>
-                productionsQuery.refetch()
-              }
-              className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <RefreshCcw size={17} />
-              Yenile
-            </button>
+        <input
+          value={searchText}
+          onChange={(event) =>
+            setSearchText(event.target.value)
           }
-        >
-          <DataTable
-            columns={columns}
-            data={filteredProductions}
-            loading={
-              productionsQuery.isLoading
-            }
-            emptyText="Üretim kaydı bulunamadı."
-            totalCount={
-              filteredProductions.length
-            }
-          />
-        </Card>
-      )}
+          placeholder="Ara..."
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedProductIds([]);
+        setSelectedStatusCodes([]);
+        setSelectedWarehouseIds([]);
+        setSortBy("productionDate");
+        setSortDirection("desc");
+        setSearchText("");
+      }}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => productionsQuery.refetch()}
+      disabled={productionsQuery.isFetching}
+      title="Üretim kayıtlarını yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          productionsQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
+
+{viewMode === "list" && (
+  <Card
+    title={`Toplam ${filteredProductions.length} üretim kaydı`}
+  >
+    <DataTable
+      columns={columns}
+      data={filteredProductions}
+      loading={productionsQuery.isLoading}
+      emptyText="Üretim kaydı bulunamadı."
+      totalCount={filteredProductions.length}
+    />
+  </Card>
+)}
 
       {viewMode === "board" && (
         <DndContext

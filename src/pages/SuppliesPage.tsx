@@ -341,16 +341,6 @@ const [transitionNote, setTransitionNote] = useState("");
     setActiveDetailTab("general");
   };
 
-  const clearFilters = () => {
-    setSelectedSupplierIds([]);
-    setSelectedStatusCodes([]);
-    setGlobalSearchText("");
-    setDocumentFilter("");
-    setStatusFilter("");
-    setSortBy("supplyDate");
-    setSortDirection("desc");
-  };
-
   const handleSupplierChange = (value: string) => {
     setSupplierId(value);
     setLines([createEmptyLine()]);
@@ -711,18 +701,18 @@ const [transitionNote, setTransitionNote] = useState("");
         </button>
       ),
 
-      filter: (
-        <input
-          className="h-10 w-full rounded-lg border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Belge ara..."
-          value={documentFilter}
-          onChange={(event) =>
-            setDocumentFilter(
-              event.target.value
-            )
-          }
-        />
-      ),
+      // filter: (
+      //   <input
+      //     className="h-10 w-full rounded-lg border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+      //     placeholder="Belge ara..."
+      //     value={documentFilter}
+      //     onChange={(event) =>
+      //       setDocumentFilter(
+      //         event.target.value
+      //       )
+      //     }
+      //   />
+      // ),
     },
     {
       header: "Tedarikçi",
@@ -892,15 +882,6 @@ const [transitionNote, setTransitionNote] = useState("");
 
             <button
               type="button"
-              onClick={clearFilters}
-              className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <X size={18} />
-              Filtreleri Temizle
-            </button>
-
-            <button
-              type="button"
               onClick={openCreateDrawer}
               className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-5 font-semibold text-white hover:bg-indigo-700"
             >
@@ -919,146 +900,173 @@ const [transitionNote, setTransitionNote] = useState("");
         </div>
       )}
 
-      <Card className="mb-5 p-5">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <MultiSelect
-              label="Tedarikçiler"
-              values={selectedSupplierIds}
-              onChange={setSelectedSupplierIds}
-              placeholder="Tedarikçi seçin"
-              options={supplierOptions}
-            />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="w-[165px]">
+      <MultiSelect
+        label="Tedarikçi"
+        values={selectedSupplierIds}
+        onChange={setSelectedSupplierIds}
+        placeholder="Tedarikçi"
+        options={supplierOptions}
+      />
+    </div>
 
-            <MultiSelect
-              label="Tedarik Durumları"
-              values={selectedStatusCodes}
-              onChange={setSelectedStatusCodes}
-              placeholder="Durum seçin"
-              options={supplyStatuses.options}
-            />
-          </div>
+    <div className="w-[165px]">
+      <MultiSelect
+        label="Tedarik Durumu"
+        values={selectedStatusCodes}
+        onChange={setSelectedStatusCodes}
+        placeholder="Durum"
+        options={supplyStatuses.options}
+      />
+    </div>
 
-          <div className="grid grid-cols-4 gap-4">
-            <SelectInput
-              label="Sırala"
-              value={sortBy}
-              onChange={setSortBy}
-              options={[
-                {
-                  label: "Tedarik Tarihi",
-                  value: "supplyDate",
-                },
-                {
-                  label: "Teslim Tarihi",
-                  value: "deliveryDate",
-                },
-                {
-                  label: "Tedarikçi",
-                  value: "supplierName",
-                },
-                {
-                  label: "Belge No",
-                  value: "documentNumber",
-                },
-                {
-                  label: "Toplam Tutar",
-                  value: "totalAmount",
-                },
-                {
-                  label: "Kalem Sayısı",
-                  value: "itemCount",
-                },
-              ]}
-            />
+    <div className="w-[155px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Tedarik Tarihi",
+            value: "supplyDate",
+          },
+          {
+            label: "Teslim Tarihi",
+            value: "deliveryDate",
+          },
+          {
+            label: "Tedarikçi",
+            value: "supplierName",
+          },
+          {
+            label: "Belge No",
+            value: "documentNumber",
+          },
+          {
+            label: "Toplam Tutar",
+            value: "totalAmount",
+          },
+          {
+            label: "Kalem Sayısı",
+            value: "itemCount",
+          },
+        ]}
+      />
+    </div>
 
-            <SelectInput
-              label="Sıralama"
-              value={sortDirection}
-              onChange={setSortDirection}
-              options={[
-                {
-                  label: "Artan",
-                  value: "asc",
-                },
-                {
-                  label: "Azalan",
-                  value: "desc",
-                },
-              ]}
-            />
+    <div className="w-[110px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Artan",
+            value: "asc",
+          },
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+        ]}
+      />
+    </div>
 
-            <SelectInput
-              label="Kayıt Durumu"
-              value={statusFilter}
-              onChange={setStatusFilter}
-              placeholder="Tümü"
-              options={[
-                {
-                  label: "Aktif",
-                  value: "active",
-                },
-                {
-                  label: "Pasif",
-                  value: "passive",
-                },
-              ]}
-            />
+    <div className="w-[125px]">
+      <SelectInput
+        label="Kayıt"
+        value={statusFilter}
+        onChange={setStatusFilter}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "Aktif",
+            value: "active",
+          },
+          {
+            label: "Pasif",
+            value: "passive",
+          },
+        ]}
+      />
+    </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Arama
-              </label>
+    <div className="w-[120px]">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
 
-              <div className="relative">
-                <Search
-                  className="absolute right-3 top-3 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  className="h-11 w-full rounded-xl border border-slate-200 pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Belge, tedarikçi, çalışan..."
-                  value={globalSearchText}
-                  onChange={(event) =>
-                    setGlobalSearchText(
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card
-        title={`Toplam ${filteredSupplies.length} tedarik kaydı bulundu`}
-        headerRight={
-          <button
-            type="button"
-            onClick={() =>
-              suppliesQuery.refetch()
-            }
-            className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            <RefreshCcw size={17} />
-            Yenile
-          </button>
-        }
-      >
-        <DataTable
-          columns={columns}
-          data={filteredSupplies}
-          loading={
-            suppliesQuery.isLoading ||
-            suppliersQuery.isLoading ||
-            supplyStatuses.isLoading
-          }
-          emptyText="Tedarik kaydı bulunamadı."
-          totalCount={filteredSupplies.length}
+      <div className="relative">
+        <Search
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          size={17}
         />
-      </Card>
+
+        <input
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          placeholder="Ara..."
+          value={globalSearchText}
+          onChange={(event) =>
+            setGlobalSearchText(event.target.value)
+          }
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedSupplierIds([]);
+        setSelectedStatusCodes([]);
+        setSortBy("supplyDate");
+        setSortDirection("desc");
+        setStatusFilter("");
+        setGlobalSearchText("");
+      }}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => suppliesQuery.refetch()}
+      disabled={suppliesQuery.isFetching}
+      title="Tedarikleri yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          suppliesQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
+
+<Card
+  title={`Toplam ${filteredSupplies.length} tedarik kaydı bulundu`}
+>
+  <DataTable
+    columns={columns}
+    data={filteredSupplies}
+    loading={
+      suppliesQuery.isLoading ||
+      suppliersQuery.isLoading ||
+      supplyStatuses.isLoading
+    }
+    emptyText="Tedarik kaydı bulunamadı."
+    totalCount={filteredSupplies.length}
+  />
+</Card>
 
       <CreateDrawer
         open={showCreateDrawer}

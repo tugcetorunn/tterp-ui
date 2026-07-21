@@ -35,8 +35,6 @@ export const menuItems = [
     children: [
       { title: "Müşteriler", path: "/customers", icon: Users },
       { title: "Siparişler", path: "/orders", icon: ShoppingCart },
-      { title: "Faturalar", path: "/invoices", icon: FileText },
-      { title: "Ödemeler", path: "/payments", icon: CreditCard },
     ],
   },
   {

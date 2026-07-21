@@ -169,18 +169,6 @@ export default function SupplierMaterialsPage() {
     resetCreateForm();
   };
 
-  const clearFilters = () => {
-    setSelectedSupplierIds([]);
-    setSelectedMaterialIds([]);
-    setSelectedCurrencies([]);
-    setGlobalSearchText("");
-    setSupplierNameFilter("");
-    setMaterialNameFilter("");
-    setStatusFilter("");
-    setSortBy("materialName");
-    setSortDirection("asc");
-  };
-
   const createSupplierMaterial = (
     event: React.FormEvent<HTMLFormElement>
   ) => {
@@ -394,18 +382,18 @@ export default function SupplierMaterialsPage() {
         </button>
       ),
 
-      filter: (
-        <input
-          className="h-10 w-full rounded-lg border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Malzeme ara..."
-          value={materialNameFilter}
-          onChange={(event) =>
-            setMaterialNameFilter(
-              event.target.value
-            )
-          }
-        />
-      ),
+      // filter: (
+      //   <input
+      //     className="h-10 w-full rounded-lg border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+      //     placeholder="Malzeme ara..."
+      //     value={materialNameFilter}
+      //     onChange={(event) =>
+      //       setMaterialNameFilter(
+      //         event.target.value
+      //       )
+      //     }
+      //   />
+      // ),
     },
     {
       header: "Tedarikçi",
@@ -421,25 +409,25 @@ export default function SupplierMaterialsPage() {
         </div>
       ),
 
-      filter: (
-        <input
-          className="h-10 w-full rounded-lg border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Tedarikçi ara..."
-          value={supplierNameFilter}
-          onChange={(event) =>
-            setSupplierNameFilter(
-              event.target.value
-            )
-          }
-        />
-      ),
+      // filter: (
+      //   <input
+      //     className="h-10 w-full rounded-lg border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+      //     placeholder="Tedarikçi ara..."
+      //     value={supplierNameFilter}
+      //     onChange={(event) =>
+      //       setSupplierNameFilter(
+      //         event.target.value
+      //       )
+      //     }
+      //   />
+      // ),
     },
-    {
-      header: "Para Birimi",
-      render: (item) =>
-        item.currencyName || "-",
-      filter: null,
-    },
+    // {
+    //   header: "Para Birimi",
+    //   render: (item) =>
+    //     item.currencyName || "-",
+    //   filter: null,
+    // },
     {
       header: "Liste Fiyatı",
       render: (item) => (
@@ -514,19 +502,19 @@ export default function SupplierMaterialsPage() {
         />
       ),
 
-      filter: (
-        <select
-          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-          value={statusFilter}
-          onChange={(event) =>
-            setStatusFilter(event.target.value)
-          }
-        >
-          <option value="">Tümü</option>
-          <option value="active">Aktif</option>
-          <option value="passive">Pasif</option>
-        </select>
-      ),
+      // filter: (
+      //   <select
+      //     className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+      //     value={statusFilter}
+      //     onChange={(event) =>
+      //       setStatusFilter(event.target.value)
+      //     }
+      //   >
+      //     <option value="">Tümü</option>
+      //     <option value="active">Aktif</option>
+      //     <option value="passive">Pasif</option>
+      //   </select>
+      // ),
     },
     {
       header: "İşlemler",
@@ -579,15 +567,6 @@ export default function SupplierMaterialsPage() {
 
             <button
               type="button"
-              onClick={clearFilters}
-              className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <X size={18} />
-              Filtreleri Temizle
-            </button>
-
-            <button
-              type="button"
               onClick={() =>
                 setShowCreateDrawer(true)
               }
@@ -616,155 +595,185 @@ export default function SupplierMaterialsPage() {
         </div>
       )}
 
-      <Card className="mb-5 p-5">
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <MultiSelect
-              label="Tedarikçiler"
-              values={selectedSupplierIds}
-              onChange={setSelectedSupplierIds}
-              placeholder="Tedarikçi seçin"
-              options={supplierOptions}
-            />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="w-[160px]">
+      <MultiSelect
+        label="Tedarikçi"
+        values={selectedSupplierIds}
+        onChange={setSelectedSupplierIds}
+        placeholder="Tedarikçi"
+        options={supplierOptions}
+      />
+    </div>
 
-            <MultiSelect
-              label="Malzemeler"
-              values={selectedMaterialIds}
-              onChange={setSelectedMaterialIds}
-              placeholder="Malzeme seçin"
-              options={materialOptions}
-            />
+    <div className="w-[160px]">
+      <MultiSelect
+        label="Malzeme"
+        values={selectedMaterialIds}
+        onChange={setSelectedMaterialIds}
+        placeholder="Malzeme"
+        options={materialOptions}
+      />
+    </div>
 
-            <MultiSelect
-              label="Para Birimleri"
-              values={selectedCurrencies}
-              onChange={setSelectedCurrencies}
-              placeholder="Para birimi seçin"
-              options={currencyOptions}
-            />
-          </div>
+    <div className="w-[145px]">
+      <MultiSelect
+        label="Para Birimi"
+        values={selectedCurrencies}
+        onChange={setSelectedCurrencies}
+        placeholder="Para birimi"
+        options={currencyOptions}
+      />
+    </div>
 
-          <div className="grid grid-cols-4 gap-4">
-            <SelectInput
-              label="Durum"
-              value={statusFilter}
-              onChange={setStatusFilter}
-              placeholder="Tümü"
-              options={[
-                {
-                  label: "Aktif",
-                  value: "active",
-                },
-                {
-                  label: "Pasif",
-                  value: "passive",
-                },
-              ]}
-            />
+    <div className="w-[120px]">
+      <SelectInput
+        label="Durum"
+        value={statusFilter}
+        onChange={setStatusFilter}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "Aktif",
+            value: "active",
+          },
+          {
+            label: "Pasif",
+            value: "passive",
+          },
+        ]}
+      />
+    </div>
 
-            <SelectInput
-              label="Sırala"
-              value={sortBy}
-              onChange={setSortBy}
-              options={[
-                {
-                  label: "Malzeme Adı",
-                  value: "materialName",
-                },
-                {
-                  label: "Tedarikçi Adı",
-                  value: "supplierName",
-                },
-                {
-                  label: "Birim Fiyat",
-                  value: "unitPrice",
-                },
-                {
-                  label: "Liste Fiyatı",
-                  value: "listPrice",
-                },
-                {
-                  label: "Teslim Süresi",
-                  value: "leadTimeDays",
-                },
-                {
-                  label: "MOQ",
-                  value: "moq",
-                },
-              ]}
-            />
+    <div className="w-[150px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Malzeme Adı",
+            value: "materialName",
+          },
+          {
+            label: "Tedarikçi Adı",
+            value: "supplierName",
+          },
+          {
+            label: "Birim Fiyat",
+            value: "unitPrice",
+          },
+          {
+            label: "Liste Fiyatı",
+            value: "listPrice",
+          },
+          {
+            label: "Teslim Süresi",
+            value: "leadTimeDays",
+          },
+          {
+            label: "MOQ",
+            value: "moq",
+          },
+        ]}
+      />
+    </div>
 
-            <SelectInput
-              label="Sıralama"
-              value={sortDirection}
-              onChange={setSortDirection}
-              options={[
-                {
-                  label: "Artan",
-                  value: "asc",
-                },
-                {
-                  label: "Azalan",
-                  value: "desc",
-                },
-              ]}
-            />
+    <div className="w-[110px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Artan",
+            value: "asc",
+          },
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+        ]}
+      />
+    </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Arama
-              </label>
+    <div className="w-[120px]">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
 
-              <div className="relative">
-                <Search
-                  className="absolute right-3 top-3 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  className="h-11 w-full rounded-xl border border-slate-200 pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Malzeme, tedarikçi, kod..."
-                  value={globalSearchText}
-                  onChange={(event) =>
-                    setGlobalSearchText(
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card
-        title={`Toplam ${filteredRecords.length} tedarikçi–malzeme ilişkisi bulundu`}
-        headerRight={
-          <button
-            type="button"
-            onClick={() =>
-              supplierMaterialsQuery.refetch()
-            }
-            className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            <RefreshCcw size={17} />
-            Yenile
-          </button>
-        }
-      >
-        <DataTable
-          columns={columns}
-          data={filteredRecords}
-          loading={
-            supplierMaterialsQuery.isLoading ||
-            suppliersQuery.isLoading ||
-            materialsQuery.isLoading ||
-            currencyParameters.isLoading
-          }
-          emptyText="Tedarikçi–malzeme ilişkisi bulunamadı."
-          totalCount={filteredRecords.length}
+      <div className="relative">
+        <Search
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          size={17}
         />
-      </Card>
+
+        <input
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          placeholder="Ara..."
+          value={globalSearchText}
+          onChange={(event) =>
+            setGlobalSearchText(event.target.value)
+          }
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedSupplierIds([]);
+        setSelectedMaterialIds([]);
+        setSelectedCurrencies([]);
+        setStatusFilter("");
+        setSortBy("materialName");
+        setSortDirection("asc");
+        setGlobalSearchText("");
+      }}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => supplierMaterialsQuery.refetch()}
+      disabled={supplierMaterialsQuery.isFetching}
+      title="Tedarikçi malzeme ilişkilerini yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          supplierMaterialsQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
+
+<Card
+  title={`Toplam ${filteredRecords.length} tedarikçi–malzeme ilişkisi bulundu`}
+>
+  <DataTable
+    columns={columns}
+    data={filteredRecords}
+    loading={
+      supplierMaterialsQuery.isLoading ||
+      suppliersQuery.isLoading ||
+      materialsQuery.isLoading ||
+      currencyParameters.isLoading
+    }
+    emptyText="Tedarikçi–malzeme ilişkisi bulunamadı."
+    totalCount={filteredRecords.length}
+  />
+</Card>
 
       <CreateDrawer
         open={showCreateDrawer}

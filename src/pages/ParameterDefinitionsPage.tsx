@@ -134,14 +134,22 @@ export default function ParameterDefinitionsPage() {
   const [sortDirection, setSortDirection] =
     useState("asc");
 
-  const definitionsQuery = useQuery({
+  const definitionsQuery = useQuery<
+    ParameterDefinition[],
+    Error
+  >({
     queryKey: ["parameterDefinitions"],
-    queryFn: parameterDefinitionService.getList,
+    queryFn: () =>
+      parameterDefinitionService.getList(),
   });
 
-  const valuesQuery = useQuery({
+  const valuesQuery = useQuery<
+    ParameterValue[],
+    Error
+  >({
     queryKey: ["parameterValues"],
-    queryFn: parameterValueService.getList,
+    queryFn: () =>
+      parameterValueService.getList(),
   });
 
   const definitions = definitionsQuery.data ?? [];
@@ -461,15 +469,6 @@ export default function ParameterDefinitionsPage() {
     });
   };
 
-  const clearFilters = () => {
-    setGlobalSearchText("");
-    setParamTypeFilter("");
-    setDataTypeFilter("");
-    setStatusFilter("");
-    setSortBy("paramType");
-    setSortDirection("asc");
-  };
-
   const filteredDefinitions = useMemo(() => {
     let list = [...definitions];
 
@@ -764,14 +763,6 @@ export default function ParameterDefinitionsPage() {
         description="Müşteri tipi, para birimi, durum, birim ve diğer parametrik değerleri yönetin."
         rightContent={
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <X size={18} />
-              Filtreleri Temizle
-            </button>
 
             <button
               type="button"
@@ -800,145 +791,177 @@ export default function ParameterDefinitionsPage() {
         </div>
       )}
 
-      <Card className="mb-5 p-5">
-        <div className="grid grid-cols-5 gap-4">
-          <SelectInput
-            label="Data Type"
-            value={dataTypeFilter}
-            onChange={setDataTypeFilter}
-            placeholder="Tümü"
-            options={[
-              {
-                label: "int",
-                value: "int",
-              },
-              {
-                label: "string",
-                value: "string",
-              },
-              {
-                label: "bool",
-                value: "bool",
-              },
-              {
-                label: "datetime",
-                value: "datetime",
-              },
-              {
-                label: "decimal",
-                value: "decimal",
-              },
-            ]}
-          />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="w-[130px]">
+      <SelectInput
+        label="Data Type"
+        value={dataTypeFilter}
+        onChange={setDataTypeFilter}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "int",
+            value: "int",
+          },
+          {
+            label: "string",
+            value: "string",
+          },
+          {
+            label: "bool",
+            value: "bool",
+          },
+          {
+            label: "datetime",
+            value: "datetime",
+          },
+          {
+            label: "decimal",
+            value: "decimal",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Durum"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            placeholder="Tümü"
-            options={[
-              {
-                label: "Aktif",
-                value: "active",
-              },
-              {
-                label: "Pasif",
-                value: "passive",
-              },
-            ]}
-          />
+    <div className="w-[120px]">
+      <SelectInput
+        label="Durum"
+        value={statusFilter}
+        onChange={setStatusFilter}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "Aktif",
+            value: "active",
+          },
+          {
+            label: "Pasif",
+            value: "passive",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Sırala"
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              {
-                label: "Parametre Tipi",
-                value: "paramType",
-              },
-              {
-                label: "Data Type",
-                value: "dataType",
-              },
-              {
-                label: "Değer Sayısı",
-                value: "valueCount",
-              },
-            ]}
-          />
+    <div className="w-[155px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Parametre Tipi",
+            value: "paramType",
+          },
+          {
+            label: "Data Type",
+            value: "dataType",
+          },
+          {
+            label: "Değer Sayısı",
+            value: "valueCount",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Sıralama"
-            value={sortDirection}
-            onChange={setSortDirection}
-            options={[
-              {
-                label: "Artan",
-                value: "asc",
-              },
-              {
-                label: "Azalan",
-                value: "desc",
-              },
-            ]}
-          />
+    <div className="w-[110px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Artan",
+            value: "asc",
+          },
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+        ]}
+      />
+    </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Arama
-            </label>
+    <div className="w-[120px]">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
 
-            <div className="relative">
-              <Search
-                className="absolute right-3 top-3 text-slate-400"
-                size={18}
-              />
+      <div className="relative">
+        <Search
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          size={17}
+        />
 
-              <input
-                className="h-11 w-full rounded-xl border border-slate-200 pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Tip, açıklama, data type..."
-                value={globalSearchText}
-                onChange={(event) =>
-                  setGlobalSearchText(
-                    event.target.value
-                  )
-                }
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card
-        title={`Toplam ${filteredDefinitions.length} parametre tanımı bulundu`}
-        headerRight={
-          <button
-            type="button"
-            onClick={() => {
-              definitionsQuery.refetch();
-              valuesQuery.refetch();
-            }}
-            className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            <RefreshCcw size={17} />
-            Yenile
-          </button>
-        }
-      >
-        <DataTable
-          columns={columns}
-          data={filteredDefinitions}
-          loading={
-            definitionsQuery.isLoading ||
-            valuesQuery.isLoading
-          }
-          emptyText="Parametre tanımı bulunamadı."
-          totalCount={
-            filteredDefinitions.length
+        <input
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          placeholder="Ara..."
+          value={globalSearchText}
+          onChange={(event) =>
+            setGlobalSearchText(event.target.value)
           }
         />
-      </Card>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setDataTypeFilter("");
+        setStatusFilter("");
+        setSortBy("paramType");
+        setSortDirection("asc");
+        setGlobalSearchText("");
+      }}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        definitionsQuery.refetch();
+        valuesQuery.refetch();
+      }}
+      disabled={
+        definitionsQuery.isFetching ||
+        valuesQuery.isFetching
+      }
+      title="Parametreleri yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          definitionsQuery.isFetching ||
+          valuesQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
+
+<Card
+  title={`Toplam ${filteredDefinitions.length} parametre tanımı bulundu`}
+>
+  <DataTable
+    columns={columns}
+    data={filteredDefinitions}
+    loading={
+      definitionsQuery.isLoading ||
+      valuesQuery.isLoading
+    }
+    emptyText="Parametre tanımı bulunamadı."
+    totalCount={filteredDefinitions.length}
+  />
+</Card>
 
       <CreateDrawer
         open={showParameterDrawer}

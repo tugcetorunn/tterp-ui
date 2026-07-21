@@ -100,16 +100,6 @@ export default function CategoriesPage() {
   createMutation.reset();
 };
 
-  const clearFilters = () => {
-    setGlobalSearchText("");
-    setCategoryNameFilter("");
-    setDescriptionFilter("");
-    setSelectedCategoryIds([]);
-    setStatusFilter("");
-    setSortBy("createdDate");
-    setSortDirection("desc");
-    };
-
   const categories = categoriesQuery.data ?? [];
 
   const filteredCategories = useMemo(() => {
@@ -189,26 +179,26 @@ export default function CategoriesPage() {
           <p className="text-xs text-slate-400">ID: {category.id}</p>
         </div>
       ),
-      filter: (
-        <input
-            className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Kategori ara..."
-            value={categoryNameFilter}
-            onChange={(e) => setCategoryNameFilter(e.target.value)}
-        />
-    ),
+    //   filter: (
+    //     <input
+    //         className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+    //         placeholder="Kategori ara..."
+    //         value={categoryNameFilter}
+    //         onChange={(e) => setCategoryNameFilter(e.target.value)}
+    //     />
+    // ),
     },
     {
       header: "Açıklama",
       render: (category) => category.description || "-",
-      filter: (
-        <input
-            className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Açıklama ara..."
-            value={descriptionFilter}
-            onChange={(e) => setDescriptionFilter(e.target.value)}
-        />
-    ),
+    //   filter: (
+    //     <input
+    //         className="w-full h-10 border border-slate-200 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+    //         placeholder="Açıklama ara..."
+    //         value={descriptionFilter}
+    //         onChange={(e) => setDescriptionFilter(e.target.value)}
+    //     />
+    // ),
     },
     {
       header: "Durum",
@@ -223,17 +213,17 @@ export default function CategoriesPage() {
           {category.isActive === false ? "Pasif" : "Aktif"}
         </span>
       ),
-      filter: (
-        <select
-          className="w-full h-10 border border-slate-200 rounded-lg px-3 bg-white outline-none focus:ring-2 focus:ring-indigo-500"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">Seçiniz</option>
-          <option value="active">Aktif</option>
-          <option value="passive">Pasif</option>
-        </select>
-      ),
+      // filter: (
+      //   <select
+      //     className="w-full h-10 border border-slate-200 rounded-lg px-3 bg-white outline-none focus:ring-2 focus:ring-indigo-500"
+      //     value={statusFilter}
+      //     onChange={(e) => setStatusFilter(e.target.value)}
+      //   >
+      //     <option value="">Seçiniz</option>
+      //     <option value="active">Aktif</option>
+      //     <option value="passive">Pasif</option>
+      //   </select>
+      // ),
     },
     {
       header: "Oluşturma Tarihi",
@@ -274,14 +264,6 @@ export default function CategoriesPage() {
             </button>
 
             <button
-              onClick={clearFilters}
-              className="h-11 px-5 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold flex items-center gap-2 hover:bg-slate-50"
-            >
-              <X size={18} />
-              Filtreleri Temizle
-            </button>
-
-            <button
               onClick={() => {setFormError(null);
   createMutation.reset(); setShowCreatePanel(true)}}
               className="h-11 px-5 rounded-xl bg-indigo-600 text-white font-semibold flex items-center gap-2 hover:bg-indigo-700"
@@ -300,88 +282,149 @@ export default function CategoriesPage() {
   </div>
 )}
 
-      <Card className="mb-5 p-5">
-        <div className="grid grid-cols-5 gap-4">
-          <MultiSelect
-            label="Kategori"
-            values={selectedCategoryIds}
-            onChange={setSelectedCategoryIds}
-            placeholder="Kategori seçin"
-            options={categories.map((category) => ({
-                label: category.name,
-                value: String(category.id),
-            }))}
-          />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="w-[160px]">
+      <MultiSelect
+        label="Kategori"
+        values={selectedCategoryIds}
+        onChange={setSelectedCategoryIds}
+        placeholder="Kategori"
+        options={categories.map((category) => ({
+          label: category.name,
+          value: String(category.id),
+        }))}
+      />
+    </div>
 
-          <SelectInput
-            label="Durum"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            placeholder="Tümü"
-            options={[
-              { label: "Aktif", value: "active" },
-              { label: "Pasif", value: "passive" },
-            ]}
-          />
+    <div className="w-[120px]">
+      <SelectInput
+        label="Durum"
+        value={statusFilter}
+        onChange={setStatusFilter}
+        placeholder="Tümü"
+        options={[
+          {
+            label: "Aktif",
+            value: "active",
+          },
+          {
+            label: "Pasif",
+            value: "passive",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Sırala"
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              { label: "Oluşturma Tarihi", value: "createdDate" },
-              { label: "Kategori Adı", value: "name" },
-              { label: "Açıklama", value: "description" },
-            ]}
-          />
+    <div className="w-[160px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Oluşturma Tarihi",
+            value: "createdDate",
+          },
+          {
+            label: "Kategori Adı",
+            value: "name",
+          },
+          {
+            label: "Açıklama",
+            value: "description",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Sıralama"
-            value={sortDirection}
-            onChange={setSortDirection}
-            options={[
-              { label: "Azalan", value: "desc" },
-              { label: "Artan", value: "asc" },
-            ]}
-          />
+    <div className="w-[110px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+          {
+            label: "Artan",
+            value: "asc",
+          },
+        ]}
+      />
+    </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Arama
-            </label>
-            <div className="relative">
-              <Search className="absolute right-3 top-3 text-slate-400" size={18} />
-              <input
-                className="w-full h-11 border border-slate-200 rounded-xl pl-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Kategori adı, açıklama..."
-                value={globalSearchText}
-                onChange={(e) => setGlobalSearchText(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
+    <div className="w-[120px]">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
 
-      <Card
-        title={`Toplam ${filteredCategories.length} kategori bulundu`}
-        headerRight={
-          <button
-            onClick={() => categoriesQuery.refetch()}
-            className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold flex items-center gap-2 hover:bg-slate-50"
-          >
-            <RefreshCcw size={17} />
-            Yenile
-          </button>
-        }
-      >
-        <DataTable
-          columns={columns}
-          data={filteredCategories}
-          loading={categoriesQuery.isLoading}
-          emptyText="Kategori bulunamadı."
-          totalCount={filteredCategories.length}
+      <div className="relative">
+        <Search
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          size={17}
         />
-      </Card>
+
+        <input
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          placeholder="Ara..."
+          value={globalSearchText}
+          onChange={(event) =>
+            setGlobalSearchText(event.target.value)
+          }
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedCategoryIds([]);
+        setStatusFilter("");
+        setSortBy("createdDate");
+        setSortDirection("desc");
+        setGlobalSearchText("");
+      }}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => categoriesQuery.refetch()}
+      disabled={categoriesQuery.isFetching}
+      title="Kategorileri yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          categoriesQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
+
+<Card
+  title={`Toplam ${filteredCategories.length} kategori bulundu`}
+>
+  <DataTable
+    columns={columns}
+    data={filteredCategories}
+    loading={categoriesQuery.isLoading}
+    emptyText="Kategori bulunamadı."
+    totalCount={filteredCategories.length}
+  />
+</Card>
 
       {showCreatePanel && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-end">

@@ -1300,15 +1300,6 @@ export default function OrdersPage() {
 
             <button
               type="button"
-              onClick={clearFilters}
-              className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <X size={18} />
-              Temizle
-            </button>
-
-            <button
-              type="button"
               onClick={() => setShowCreateDrawer(true)}
               className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-5 font-semibold text-white hover:bg-indigo-700"
             >
@@ -1357,107 +1348,157 @@ export default function OrdersPage() {
         />
       </div>
 
-      <Card className="mb-5 p-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <MultiSelect
-            label="Müşteri"
-            values={selectedCustomerIds}
-            onChange={setSelectedCustomerIds}
-            placeholder="Müşteri seçin"
-            options={customerOptions}
-          />
+      <Card className="mb-5 p-4">
+  <div className="flex flex-wrap items-end gap-3">
+    <div className="min-w-[120px] flex-1">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        Arama
+      </label>
 
-          <MultiSelect
-            label="Ürün"
-            values={selectedProductIds}
-            onChange={setSelectedProductIds}
-            placeholder="Ürün seçin"
-            options={productOptions}
-          />
+      <div className="relative">
+        <Search
+          size={17}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+        />
 
-          <MultiSelect
-            label="Sipariş Durumu"
-            values={selectedStatusCodes}
-            onChange={setSelectedStatusCodes}
-            placeholder="Durum seçin"
-            options={orderStatuses.options}
-          />
+        <input
+          value={searchText}
+          onChange={(event) =>
+            setSearchText(event.target.value)
+          }
+          placeholder="Sipariş, müşteri, ürün..."
+          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-10 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        />
+      </div>
+    </div>
 
-          <MultiSelect
-            label="Ödeme Durumu"
-            values={selectedPaymentStatusCodes}
-            onChange={setSelectedPaymentStatusCodes}
-            placeholder="Ödeme durumu seçin"
-            options={paymentStatuses.options}
-          />
+    <div className="w-[160px]">
+      <MultiSelect
+        label="Müşteri"
+        values={selectedCustomerIds}
+        onChange={setSelectedCustomerIds}
+        placeholder="Müşteri"
+        options={customerOptions}
+      />
+    </div>
 
-          <MultiSelect
-            label="Depo"
-            values={selectedWarehouseIds}
-            onChange={setSelectedWarehouseIds}
-            placeholder="Depo seçin"
-            options={warehouseOptions}
-          />
+    <div className="w-[150px]">
+      <MultiSelect
+        label="Ürün"
+        values={selectedProductIds}
+        onChange={setSelectedProductIds}
+        placeholder="Ürün"
+        options={productOptions}
+      />
+    </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Arama
-            </label>
+    <div className="w-[155px]">
+      <MultiSelect
+        label="Sipariş"
+        values={selectedStatusCodes}
+        onChange={setSelectedStatusCodes}
+        placeholder="Durum"
+        options={orderStatuses.options}
+      />
+    </div>
 
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute right-3 top-3 text-slate-400"
-              />
+    <div className="w-[155px]">
+      <MultiSelect
+        label="Ödeme"
+        values={selectedPaymentStatusCodes}
+        onChange={setSelectedPaymentStatusCodes}
+        placeholder="Durum"
+        options={paymentStatuses.options}
+      />
+    </div>
 
-              <input
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                placeholder="Sipariş, müşteri, ürün..."
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
+    <div className="w-[145px]">
+      <MultiSelect
+        label="Depo"
+        values={selectedWarehouseIds}
+        onChange={setSelectedWarehouseIds}
+        placeholder="Depo"
+        options={warehouseOptions}
+      />
+    </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <SelectInput
-            label="Sırala"
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              { label: "Sipariş Tarihi", value: "orderDate" },
-              { label: "Müşteri", value: "customerName" },
-              { label: "Genel Toplam", value: "finalAmount" },
-              { label: "Ürün Sayısı", value: "itemCount" },
-            ]}
-          />
+    <div className="w-[150px]">
+      <SelectInput
+        label="Sırala"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          {
+            label: "Sipariş Tarihi",
+            value: "orderDate",
+          },
+          {
+            label: "Müşteri",
+            value: "customerName",
+          },
+          {
+            label: "Genel Toplam",
+            value: "finalAmount",
+          },
+          {
+            label: "Ürün Sayısı",
+            value: "itemCount",
+          },
+        ]}
+      />
+    </div>
 
-          <SelectInput
-            label="Sıralama"
-            value={sortDirection}
-            onChange={setSortDirection}
-            options={[
-              { label: "Artan", value: "asc" },
-              { label: "Azalan", value: "desc" },
-            ]}
-          />
-        </div>
-      </Card>
+    <div className="w-[120px]">
+      <SelectInput
+        label="Yön"
+        value={sortDirection}
+        onChange={setSortDirection}
+        options={[
+          {
+            label: "Artan",
+            value: "asc",
+          },
+          {
+            label: "Azalan",
+            value: "desc",
+          },
+        ]}
+      />
+    </div>
+
+    <button
+      type="button"
+      onClick={clearFilters}
+      title="Filtreleri temizle"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+    >
+      <X size={16} />
+      Temizle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => ordersQuery.refetch()}
+      disabled={ordersQuery.isFetching}
+      title="Siparişleri yenile"
+      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <RefreshCcw
+        size={16}
+        className={
+          ordersQuery.isFetching
+            ? "animate-spin"
+            : ""
+        }
+      />
+      Yenile
+    </button>
+  </div>
+</Card>
 
       {viewMode === "list" && (
         <Card
           title={`Toplam ${filteredOrders.length} sipariş`}
-          headerRight={
-            <button
-              type="button"
-              onClick={() => ordersQuery.refetch()}
-              className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <RefreshCcw size={17} />
-              Yenile
-            </button>
-          }
         >
           <DataTable
             columns={columns}
