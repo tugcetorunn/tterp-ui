@@ -211,7 +211,9 @@ export default function ProductsPage() {
     {
       header: "Maliyet",
       render: (product) =>
-        `${product.costPrice!.toLocaleString("tr-TR")} ${product.currencyName ?? ""}`,
+        product.costPrice != null
+          ? `${product.costPrice.toLocaleString("tr-TR")} ${product.currencyName ?? ""}`
+          : "-",
       filter: null,
     },
     {
@@ -228,11 +230,10 @@ export default function ProductsPage() {
       header: "Durum",
       render: (product) => (
         <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            product.isActive === false
+          className={`px-3 py-1 rounded-full text-xs font-semibold ${product.isActive === false
               ? "bg-red-50 text-red-600"
               : "bg-green-50 text-green-600"
-          }`}
+            }`}
         >
           {product.isActive === false ? "Pasif" : "Aktif"}
         </span>
@@ -307,152 +308,152 @@ export default function ProductsPage() {
       )}
 
       <Card className="mb-5 p-4">
-  <div className="flex flex-wrap items-end gap-3">
-    <div className="w-[160px]">
-      <MultiSelect
-        label="Kategori"
-        values={selectedCategoryIds}
-        onChange={setSelectedCategoryIds}
-        placeholder="Kategori"
-        options={categories.map((category) => ({
-          label: category.name,
-          value: String(category.id),
-        }))}
-      />
-    </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-[160px]">
+            <MultiSelect
+              label="Kategori"
+              values={selectedCategoryIds}
+              onChange={setSelectedCategoryIds}
+              placeholder="Kategori"
+              options={categories.map((category) => ({
+                label: category.name,
+                value: String(category.id),
+              }))}
+            />
+          </div>
 
-    <div className="w-[120px]">
-      <SelectInput
-        label="Durum"
-        value={statusFilter}
-        onChange={setStatusFilter}
-        placeholder="Tümü"
-        options={[
-          {
-            label: "Aktif",
-            value: "active",
-          },
-          {
-            label: "Pasif",
-            value: "passive",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[120px]">
+            <SelectInput
+              label="Durum"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="Tümü"
+              options={[
+                {
+                  label: "Aktif",
+                  value: "active",
+                },
+                {
+                  label: "Pasif",
+                  value: "passive",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[145px]">
-      <SelectInput
-        label="Sırala"
-        value={sortBy}
-        onChange={setSortBy}
-        options={[
-          {
-            label: "Ürün Adı",
-            value: "name",
-          },
-          {
-            label: "Ürün Kodu",
-            value: "code",
-          },
-          {
-            label: "Fiyat",
-            value: "price",
-          },
-          {
-            label: "Stok",
-            value: "stockQuantity",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[145px]">
+            <SelectInput
+              label="Sırala"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                {
+                  label: "Ürün Adı",
+                  value: "name",
+                },
+                {
+                  label: "Ürün Kodu",
+                  value: "code",
+                },
+                {
+                  label: "Fiyat",
+                  value: "price",
+                },
+                {
+                  label: "Stok",
+                  value: "stockQuantity",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[110px]">
-      <SelectInput
-        label="Yön"
-        value={sortDirection}
-        onChange={setSortDirection}
-        options={[
-          {
-            label: "Artan",
-            value: "asc",
-          },
-          {
-            label: "Azalan",
-            value: "desc",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[110px]">
+            <SelectInput
+              label="Yön"
+              value={sortDirection}
+              onChange={setSortDirection}
+              options={[
+                {
+                  label: "Artan",
+                  value: "asc",
+                },
+                {
+                  label: "Azalan",
+                  value: "desc",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[120px]">
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
-        Arama
-      </label>
+          <div className="w-[120px]">
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Arama
+            </label>
 
-      <div className="relative">
-        <Search
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-          size={17}
+            <div className="relative">
+              <Search
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={17}
+              />
+
+              <input
+                className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Ara..."
+                value={globalSearchText}
+                onChange={(event) =>
+                  setGlobalSearchText(event.target.value)
+                }
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCategoryIds([]);
+              setStatusFilter("");
+              setSortBy("name");
+              setSortDirection("asc");
+              setGlobalSearchText("");
+            }}
+            title="Filtreleri temizle"
+            className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+          >
+            <X size={16} />
+            Temizle
+          </button>
+
+          <button
+            type="button"
+            onClick={() => productsQuery.refetch()}
+            disabled={productsQuery.isFetching}
+            title="Ürünleri yenile"
+            className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCcw
+              size={16}
+              className={
+                productsQuery.isFetching
+                  ? "animate-spin"
+                  : ""
+              }
+            />
+            Yenile
+          </button>
+        </div>
+      </Card>
+
+      <Card
+        title={`Toplam ${filteredProducts.length} ürün bulundu`}
+      >
+        <DataTable
+          columns={columns}
+          data={filteredProducts}
+          loading={productsQuery.isLoading}
+          emptyText="Ürün bulunamadı."
+          totalCount={filteredProducts.length}
         />
-
-        <input
-          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-          placeholder="Ara..."
-          value={globalSearchText}
-          onChange={(event) =>
-            setGlobalSearchText(event.target.value)
-          }
-        />
-      </div>
-    </div>
-
-    <button
-      type="button"
-      onClick={() => {
-        setSelectedCategoryIds([]);
-        setStatusFilter("");
-        setSortBy("name");
-        setSortDirection("asc");
-        setGlobalSearchText("");
-      }}
-      title="Filtreleri temizle"
-      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-    >
-      <X size={16} />
-      Temizle
-    </button>
-
-    <button
-      type="button"
-      onClick={() => productsQuery.refetch()}
-      disabled={productsQuery.isFetching}
-      title="Ürünleri yenile"
-      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <RefreshCcw
-        size={16}
-        className={
-          productsQuery.isFetching
-            ? "animate-spin"
-            : ""
-        }
-      />
-      Yenile
-    </button>
-  </div>
-</Card>
-
-<Card
-  title={`Toplam ${filteredProducts.length} ürün bulundu`}
->
-  <DataTable
-    columns={columns}
-    data={filteredProducts}
-    loading={productsQuery.isLoading}
-    emptyText="Ürün bulunamadı."
-    totalCount={filteredProducts.length}
-  />
-</Card>
+      </Card>
 
       {showCreatePanel && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-end">

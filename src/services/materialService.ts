@@ -23,7 +23,6 @@ export interface CreateMaterialRequest {
   code: string;
   description?: string | null;
   unit: number;
-  costPrice: number;
   taxRate: number;
   stockQuantity?: number | null;
 }

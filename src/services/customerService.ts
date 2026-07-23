@@ -7,7 +7,8 @@ export interface Customer {
   lastName?: string | null;
   fullName?: string | null;
   companyName?: string | null;
-  taxNumber: string;
+  nationalId?: string | null;
+  taxNumber?: string | null;
   customerType?: number | null;
   email: string;
   phoneNumber: string;
@@ -32,7 +33,8 @@ export interface CreateCustomerRequest {
   firstName?: string | null;
   lastName?: string | null;
   companyName?: string | null;
-  taxNumber: string;
+  nationalId?: string | null;
+  taxNumber?: string | null;
   customerType?: number | null;
   email: string;
   phoneNumber: string;

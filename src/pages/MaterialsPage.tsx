@@ -190,7 +190,6 @@ export default function MaterialsPage() {
       description:
         description.trim() || null,
       unit: Number(unit),
-      costPrice: Number(costPrice || 0),
       taxRate: Number(taxRate || 0),
       stockQuantity: 0,
     });
@@ -413,37 +412,37 @@ export default function MaterialsPage() {
       filter: null,
     },
     {
-  header: "Ortalama Maliyet",
-  render: (material) =>
-    material.averageCost != null ? (
-      <span className="font-medium text-slate-800">
-        {material.averageCost.toLocaleString("tr-TR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
-      </span>
-    ) : (
-      <span className="text-sm text-slate-400">
-        Henüz tedarik edilmedi
-      </span>
-    ),
-},
+      header: "Ortalama Maliyet",
+      render: (material) =>
+        material.averageCost != null ? (
+          <span className="font-medium text-slate-800">
+            {material.averageCost.toLocaleString("tr-TR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        ) : (
+          <span className="text-sm text-slate-400">
+            Henüz tedarik edilmedi
+          </span>
+        ),
+    },
     {
-  header: "Son Alış Fiyatı",
-  render: (material) =>
-    material.lastPurchasePrice != null ? (
-      <span className="font-medium text-slate-800">
-        {material.lastPurchasePrice.toLocaleString("tr-TR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
-      </span>
-    ) : (
-      <span className="text-sm text-slate-400">
-        Henüz tedarik edilmedi
-      </span>
-    ),
-},
+      header: "Son Alış Fiyatı",
+      render: (material) =>
+        material.lastPurchasePrice != null ? (
+          <span className="font-medium text-slate-800">
+            {material.lastPurchasePrice.toLocaleString("tr-TR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        ) : (
+          <span className="text-sm text-slate-400">
+            Henüz tedarik edilmedi
+          </span>
+        ),
+    },
     {
       header: "KDV",
       render: (material) => `%${material.taxRate}`,
@@ -602,181 +601,181 @@ export default function MaterialsPage() {
       )}
 
       <Card className="mb-5 p-4">
-  <div className="flex flex-wrap items-end gap-3">
-    <div className="w-[140px]">
-      <MultiSelect
-        label="Birim"
-        values={selectedUnits}
-        onChange={setSelectedUnits}
-        placeholder="Birim"
-        options={unitOptions}
-      />
-    </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-[140px]">
+            <MultiSelect
+              label="Birim"
+              values={selectedUnits}
+              onChange={setSelectedUnits}
+              placeholder="Birim"
+              options={unitOptions}
+            />
+          </div>
 
-    <div className="w-[135px]">
-      <SelectInput
-        label="Stok"
-        value={stockStatusFilter}
-        onChange={setStockStatusFilter}
-        placeholder="Tümü"
-        options={[
-          {
-            label: "Stokta",
-            value: "inStock",
-          },
-          {
-            label: "Kritik",
-            value: "critical",
-          },
-          {
-            label: "Tükendi",
-            value: "outOfStock",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[135px]">
+            <SelectInput
+              label="Stok"
+              value={stockStatusFilter}
+              onChange={setStockStatusFilter}
+              placeholder="Tümü"
+              options={[
+                {
+                  label: "Stokta",
+                  value: "inStock",
+                },
+                {
+                  label: "Kritik",
+                  value: "critical",
+                },
+                {
+                  label: "Tükendi",
+                  value: "outOfStock",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[120px]">
-      <SelectInput
-        label="Durum"
-        value={statusFilter}
-        onChange={setStatusFilter}
-        placeholder="Tümü"
-        options={[
-          {
-            label: "Aktif",
-            value: "active",
-          },
-          {
-            label: "Pasif",
-            value: "passive",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[120px]">
+            <SelectInput
+              label="Durum"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="Tümü"
+              options={[
+                {
+                  label: "Aktif",
+                  value: "active",
+                },
+                {
+                  label: "Pasif",
+                  value: "passive",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[160px]">
-      <SelectInput
-        label="Sırala"
-        value={sortBy}
-        onChange={setSortBy}
-        options={[
-          {
-            label: "Malzeme Adı",
-            value: "name",
-          },
-          {
-            label: "Malzeme Kodu",
-            value: "code",
-          },
-          {
-            label: "Maliyet",
-            value: "costPrice",
-          },
-          {
-            label: "Toplam Stok",
-            value: "stockQuantity",
-          },
-          {
-            label: "Tedarikçi Sayısı",
-            value: "supplierCount",
-          },
-          {
-            label: "Depo Sayısı",
-            value: "warehouseCount",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[160px]">
+            <SelectInput
+              label="Sırala"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                {
+                  label: "Malzeme Adı",
+                  value: "name",
+                },
+                {
+                  label: "Malzeme Kodu",
+                  value: "code",
+                },
+                {
+                  label: "Maliyet",
+                  value: "costPrice",
+                },
+                {
+                  label: "Toplam Stok",
+                  value: "stockQuantity",
+                },
+                {
+                  label: "Tedarikçi Sayısı",
+                  value: "supplierCount",
+                },
+                {
+                  label: "Depo Sayısı",
+                  value: "warehouseCount",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[110px]">
-      <SelectInput
-        label="Yön"
-        value={sortDirection}
-        onChange={setSortDirection}
-        options={[
-          {
-            label: "Artan",
-            value: "asc",
-          },
-          {
-            label: "Azalan",
-            value: "desc",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[110px]">
+            <SelectInput
+              label="Yön"
+              value={sortDirection}
+              onChange={setSortDirection}
+              options={[
+                {
+                  label: "Artan",
+                  value: "asc",
+                },
+                {
+                  label: "Azalan",
+                  value: "desc",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[120px]">
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
-        Arama
-      </label>
+          <div className="w-[120px]">
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Arama
+            </label>
 
-      <div className="relative">
-        <Search
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-          size={17}
-        />
+            <div className="relative">
+              <Search
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={17}
+              />
 
-        <input
-          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-          placeholder="Ara..."
-          value={globalSearchText}
-          onChange={(event) =>
-            setGlobalSearchText(event.target.value)
-          }
-        />
-      </div>
-    </div>
+              <input
+                className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Ara..."
+                value={globalSearchText}
+                onChange={(event) =>
+                  setGlobalSearchText(event.target.value)
+                }
+              />
+            </div>
+          </div>
 
-    <button
-      type="button"
-      onClick={() => {
-        setSelectedUnits([]);
-        setStockStatusFilter("");
-        setStatusFilter("");
-        setSortBy("name");
-        setSortDirection("asc");
-        setGlobalSearchText("");
-      }}
-      title="Filtreleri temizle"
-      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-    >
-      <X size={16} />
-      Temizle
-    </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedUnits([]);
+              setStockStatusFilter("");
+              setStatusFilter("");
+              setSortBy("name");
+              setSortDirection("asc");
+              setGlobalSearchText("");
+            }}
+            title="Filtreleri temizle"
+            className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+          >
+            <X size={16} />
+            Temizle
+          </button>
 
-    <button
-      type="button"
-      onClick={() => materialsQuery.refetch()}
-      disabled={materialsQuery.isFetching}
-      title="Malzemeleri yenile"
-      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <RefreshCcw
-        size={16}
-        className={
-          materialsQuery.isFetching
-            ? "animate-spin"
-            : ""
-        }
-      />
-      Yenile
-    </button>
-  </div>
-</Card>
+          <button
+            type="button"
+            onClick={() => materialsQuery.refetch()}
+            disabled={materialsQuery.isFetching}
+            title="Malzemeleri yenile"
+            className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCcw
+              size={16}
+              className={
+                materialsQuery.isFetching
+                  ? "animate-spin"
+                  : ""
+              }
+            />
+            Yenile
+          </button>
+        </div>
+      </Card>
 
       <Card
-  title={`Toplam ${filteredMaterials.length} malzeme bulundu`}
->
-  <DataTable
-    columns={columns}
-    data={filteredMaterials}
-    loading={materialsQuery.isLoading}
-    emptyText="Malzeme bulunamadı."
-    totalCount={filteredMaterials.length}
-  />
-</Card>
+        title={`Toplam ${filteredMaterials.length} malzeme bulundu`}
+      >
+        <DataTable
+          columns={columns}
+          data={filteredMaterials}
+          loading={materialsQuery.isLoading}
+          emptyText="Malzeme bulunamadı."
+          totalCount={filteredMaterials.length}
+        />
+      </Card>
 
       <CreateDrawer
         open={showCreateDrawer}
@@ -822,14 +821,6 @@ export default function MaterialsPage() {
                 : "Birim seçiniz"
             }
             options={unitOptions}
-          />
-
-          <TextInput
-            label="Son Maliyet"
-            value={costPrice}
-            onChange={setCostPrice}
-            type="number"
-            required
           />
 
           <TextInput

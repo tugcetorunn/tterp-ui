@@ -18,6 +18,9 @@ import ProductStockMovementsPage from "./pages/ProductStockMovementsPage";
 import SuppliesPage from "./pages/SuppliesPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProductionsPage from "./pages/ProductionsPage";
+import EmployeesPage from "./pages/EmployeesPage";
+import TitlesPage from "./pages/TitlesPage";
+import RolesPage from "./pages/RolesPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 
 function ProtectedRoute() {
@@ -38,37 +41,37 @@ export default function App() {
         richColors
         closeButton
       />
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/products" element={<ProductsPage />} />
-        <Route path="/productStocks" element={<ProductStocksPage />} />
-        <Route path="/productStockMovements" element={<ProductStockMovementsPage />} />
-        <Route path="/customers" element={<CustomersPage />} />
-        <Route path="/parameters" element={<ParameterDefinitionsPage />} />
-        <Route path="/suppliers" element={<SuppliersPage />} />
-        <Route path="/materials" element={<MaterialsPage />} />
-        <Route path="/supplierMaterials" element={<SupplierMaterialsPage />} />
-        <Route path="/materialStockMovements" element={<MaterialStockMovementsPage />} />
-        <Route path="/materialStocks" element={<MaterialStocksPage />} />
-        <Route path="/warehouses" element={<WarehousesPage />} />
-        <Route path="/supplies" element={<SuppliesPage />} />
-        <Route path="/productions" element={<ProductionsPage />} />
-        <Route path="/orders" element={<OrdersPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/productStocks" element={<ProductStocksPage />} />
+          <Route path="/productStockMovements" element={<ProductStockMovementsPage />} />
+          <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/parameters" element={<ParameterDefinitionsPage />} />
+          <Route path="/suppliers" element={<SuppliersPage />} />
+          <Route path="/materials" element={<MaterialsPage />} />
+          <Route path="/supplierMaterials" element={<SupplierMaterialsPage />} />
+          <Route path="/materialStockMovements" element={<MaterialStockMovementsPage />} />
+          <Route path="/materialStocks" element={<MaterialStocksPage />} />
+          <Route path="/warehouses" element={<WarehousesPage />} />
+          <Route path="/supplies" element={<SuppliesPage />} />
+          <Route path="/productions" element={<ProductionsPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/titles" element={<TitlesPage />} />
+          <Route path="/roles" element={<RolesPage />} />
 
-        <Route path="/invoices" element={<ComingSoonPage title="Faturalar" />} />
-        <Route path="/payments" element={<ComingSoonPage title="Ödemeler" />} />
-        <Route path="/employees" element={<ComingSoonPage title="Çalışanlar" />} />
-        <Route path="/roles" element={<ComingSoonPage title="Roller" />} />
-        <Route path="/teams" element={<ComingSoonPage title="Takımlar" />} />
-        <Route path="/titles" element={<ComingSoonPage title="Ünvanlar" />} />
-        <Route path="/announcements" element={<ComingSoonPage title="Duyurular" />} />
-        <Route path="/notifications" element={<ComingSoonPage title="Bildirimler" />} />
-      </Route>
-    </Routes>
-     </>
+          <Route path="/invoices" element={<ComingSoonPage title="Faturalar" />} />
+          <Route path="/payments" element={<ComingSoonPage title="Ödemeler" />} />
+          <Route path="/teams" element={<ComingSoonPage title="Takımlar" />} />
+          <Route path="/announcements" element={<ComingSoonPage title="Duyurular" />} />
+          <Route path="/notifications" element={<ComingSoonPage title="Bildirimler" />} />
+        </Route>
+      </Routes>
+    </>
   );
 }

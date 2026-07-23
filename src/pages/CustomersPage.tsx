@@ -17,7 +17,7 @@ import TextInput from "../components/form/TextInput";
 import SelectInput from "../components/form/SelectInput";
 import { getErrorMessage } from "../utils/apiResponse";
 
-import { 
+import {
   parameterValueService,
   type ParameterValue,
 } from "../services/parameterService";
@@ -34,6 +34,7 @@ export default function CustomersPage() {
   const [lastName, setLastName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [taxNumber, setTaxNumber] = useState("");
+  const [nationalId, setNationalId] = useState("");
   const [customerType, setCustomerType] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -43,6 +44,7 @@ export default function CustomersPage() {
   const [globalSearchText, setGlobalSearchText] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [taxNumberFilter, setTaxNumberFilter] = useState("");
+  const [nationalIdFilter, setNationalIdFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -70,6 +72,7 @@ export default function CustomersPage() {
       setLastName("");
       setCompanyName("");
       setTaxNumber("");
+      setNationalId("");
       setCustomerType("");
       setEmail("");
       setPhoneNumber("");
@@ -103,23 +106,23 @@ export default function CustomersPage() {
   );
 
   const customerTypeNameMap = useMemo(
-  () =>
-    new Map(
-      parameterValues
-        .filter(
-          (value) =>
-            value.paramType
-              .trim()
-              .toLocaleLowerCase("tr-TR") ===
-            "customertype"
-        )
-        .map((value) => [
-          String(value.paramCode),
-          value.paramValue,
-        ])
-    ),
-  [parameterValues]
-);
+    () =>
+      new Map(
+        parameterValues
+          .filter(
+            (value) =>
+              value.paramType
+                .trim()
+                .toLocaleLowerCase("tr-TR") ===
+              "customertype"
+          )
+          .map((value) => [
+            String(value.paramCode),
+            value.paramValue,
+          ])
+      ),
+    [parameterValues]
+  );
 
   const filteredCustomers = useMemo(() => {
     let list = [...customers];
@@ -132,6 +135,7 @@ export default function CustomersPage() {
           x.fullName?.toLowerCase().includes(search) ||
           x.companyName?.toLowerCase().includes(search) ||
           x.taxNumber?.toLowerCase().includes(search) ||
+          x.nationalId?.toLowerCase().includes(search) ||
           x.email?.toLowerCase().includes(search) ||
           x.phoneNumber?.toLowerCase().includes(search) ||
           x.countryName?.toLocaleLowerCase("tr-TR").includes(search) ||
@@ -156,6 +160,11 @@ export default function CustomersPage() {
     if (taxNumberFilter.trim()) {
       const search = taxNumberFilter.toLowerCase();
       list = list.filter((x) => x.taxNumber?.toLowerCase().includes(search));
+    }
+
+    if (nationalIdFilter.trim()) {
+      const search = nationalIdFilter.toLowerCase();
+      list = list.filter((x) => x.nationalId?.toLowerCase().includes(search));
     }
 
     if (locationFilter.countryId) {
@@ -209,7 +218,19 @@ export default function CustomersPage() {
         result = aName.localeCompare(bName, "tr");
       }
 
-      if (sortBy === "taxNumber") result = a.taxNumber.localeCompare(b.taxNumber, "tr");
+      if (sortBy === "taxNumber") {
+        result = (a.taxNumber ?? "").localeCompare(
+          b.taxNumber ?? "",
+          "tr"
+        );
+      }
+
+      if (sortBy === "nationalId") {
+        result = (a.nationalId ?? "").localeCompare(
+          b.nationalId ?? "",
+          "tr"
+        );
+      }
 
       if (sortBy === "country") {
         result = (a.countryName ?? "").localeCompare(
@@ -255,6 +276,7 @@ export default function CustomersPage() {
     globalSearchText,
     nameFilter,
     taxNumberFilter,
+    nationalIdFilter,
     locationFilter,
     statusFilter,
     sortBy,
@@ -264,16 +286,32 @@ export default function CustomersPage() {
   const createCustomer = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!taxNumber.trim() || !email.trim() || !phoneNumber.trim()) return;
+    const isIndividual = customerType === "1";
+    const isCorporate = customerType === "2";
+
+    if (!customerType) return;
+    if (!email.trim() || !phoneNumber.trim()) return;
+
+    if (isIndividual && !nationalId.trim()) return;
+    if (isCorporate && !taxNumber.trim()) return;
 
     createMutation.mutate({
       firstName: firstName.trim() || null,
       lastName: lastName.trim() || null,
       companyName: companyName.trim() || null,
-      taxNumber: taxNumber.trim(),
-      customerType: customerType ? Number(customerType) : null,
+
+      nationalId: isIndividual
+        ? nationalId.trim()
+        : null,
+
+      taxNumber: isCorporate
+        ? taxNumber.trim()
+        : null,
+
+      customerType: Number(customerType),
       email: email.trim(),
       phoneNumber: phoneNumber.trim(),
+
       countryId: location.countryId
         ? Number(location.countryId)
         : null,
@@ -297,7 +335,6 @@ export default function CustomersPage() {
       addressLine: addressLine.trim() || null,
     });
   };
-
   const columns: DataTableColumn<Customer>[] = [
     {
       header: "Müşteri",
@@ -319,7 +356,7 @@ export default function CustomersPage() {
       // ),
     },
     {
-      header: "Vergi/TCKN",
+      header: "Vergi No",
       render: (customer) => customer.taxNumber,
       // filter: (
       //   <input
@@ -331,12 +368,16 @@ export default function CustomersPage() {
       // ),
     },
     {
+      header: "TCKN",
+      render: (customer) => customer.nationalId,
+    },
+    {
       header: "Müşteri Tipi",
       render: (customer) =>
         customer.customerType != null
           ? customerTypeNameMap.get(
-              String(customer.customerType)
-            ) ?? "-"
+            String(customer.customerType)
+          ) ?? "-"
           : "-",
       filter: null,
     },
@@ -392,11 +433,10 @@ export default function CustomersPage() {
       header: "Durum",
       render: (customer) => (
         <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            customer.isActive === false
-              ? "bg-red-50 text-red-600"
-              : "bg-green-50 text-green-600"
-          }`}
+          className={`px-3 py-1 rounded-full text-xs font-semibold ${customer.isActive === false
+            ? "bg-red-50 text-red-600"
+            : "bg-green-50 text-green-600"
+            }`}
         >
           {customer.isActive === false ? "Pasif" : "Aktif"}
         </span>
@@ -454,165 +494,165 @@ export default function CustomersPage() {
       />
 
       <Card className="mb-5 p-4">
-  <div className="flex flex-wrap items-end gap-3">
-    <div className="min-w-[520px] flex-1">
-      <LocationFilter
-        value={locationFilter}
-        onChange={setLocationFilter}
-        showCountry={false}
-      />
-    </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[520px] flex-1">
+            <LocationFilter
+              value={locationFilter}
+              onChange={setLocationFilter}
+              showCountry={false}
+            />
+          </div>
 
-    <div className="w-[125px]">
-      <SelectInput
-        label="Durum"
-        value={statusFilter}
-        onChange={setStatusFilter}
-        placeholder="Tümü"
-        options={[
-          {
-            label: "Aktif",
-            value: "active",
-          },
-          {
-            label: "Pasif",
-            value: "passive",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[125px]">
+            <SelectInput
+              label="Durum"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="Tümü"
+              options={[
+                {
+                  label: "Aktif",
+                  value: "active",
+                },
+                {
+                  label: "Pasif",
+                  value: "passive",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[150px]">
-      <SelectInput
-        label="Sırala"
-        value={sortBy}
-        onChange={setSortBy}
-        options={[
-          {
-            label: "Müşteri Adı",
-            value: "name",
-          },
-          {
-            label: "Ülke",
-            value: "country",
-          },
-          {
-            label: "Şehir",
-            value: "city",
-          },
-          {
-            label: "İlçe",
-            value: "town",
-          },
-          {
-            label: "Semt / Bölge",
-            value: "district",
-          },
-          {
-            label: "Mahalle",
-            value: "neighborhood",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[150px]">
+            <SelectInput
+              label="Sırala"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                {
+                  label: "Müşteri Adı",
+                  value: "name",
+                },
+                {
+                  label: "Ülke",
+                  value: "country",
+                },
+                {
+                  label: "Şehir",
+                  value: "city",
+                },
+                {
+                  label: "İlçe",
+                  value: "town",
+                },
+                {
+                  label: "Semt / Bölge",
+                  value: "district",
+                },
+                {
+                  label: "Mahalle",
+                  value: "neighborhood",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[115px]">
-      <SelectInput
-        label="Yön"
-        value={sortDirection}
-        onChange={setSortDirection}
-        options={[
-          {
-            label: "Artan",
-            value: "asc",
-          },
-          {
-            label: "Azalan",
-            value: "desc",
-          },
-        ]}
-      />
-    </div>
+          <div className="w-[115px]">
+            <SelectInput
+              label="Yön"
+              value={sortDirection}
+              onChange={setSortDirection}
+              options={[
+                {
+                  label: "Artan",
+                  value: "asc",
+                },
+                {
+                  label: "Azalan",
+                  value: "desc",
+                },
+              ]}
+            />
+          </div>
 
-    <div className="w-[160px]">
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
-        Arama
-      </label>
+          <div className="w-[160px]">
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Arama
+            </label>
 
-      <div className="relative">
-        <Search
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-          size={17}
-        />
+            <div className="relative">
+              <Search
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={17}
+              />
 
-        <input
-          className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-          placeholder="Müşteri, lokasyon..."
-          value={globalSearchText}
-          onChange={(event) =>
-            setGlobalSearchText(event.target.value)
-          }
-        />
-      </div>
-    </div>
+              <input
+                className="h-10 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Müşteri, lokasyon..."
+                value={globalSearchText}
+                onChange={(event) =>
+                  setGlobalSearchText(event.target.value)
+                }
+              />
+            </div>
+          </div>
 
-    <button
-      type="button"
-      onClick={() => {
-        setStatusFilter("");
-        setSortBy("name");
-        setSortDirection("asc");
-        setGlobalSearchText("");
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter("");
+              setSortBy("name");
+              setSortDirection("asc");
+              setGlobalSearchText("");
 
-        setLocationFilter({
-          countryId: "",
-          cityId: "",
-          townId: "",
-          districtId: "",
-          neighborhoodId: "",
-        });
-      }}
-      title="Filtreleri temizle"
-      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-    >
-      <X size={16} />
-      Temizle
-    </button>
+              setLocationFilter({
+                countryId: "",
+                cityId: "",
+                townId: "",
+                districtId: "",
+                neighborhoodId: "",
+              });
+            }}
+            title="Filtreleri temizle"
+            className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+          >
+            <X size={16} />
+            Temizle
+          </button>
 
-    <button
-      type="button"
-      onClick={() => customersQuery.refetch()}
-      disabled={customersQuery.isFetching}
-      title="Müşterileri yenile"
-      className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <RefreshCcw
-        size={16}
-        className={
-          customersQuery.isFetching
-            ? "animate-spin"
-            : ""
-        }
-      />
-      Yenile
-    </button>
-  </div>
-</Card>
+          <button
+            type="button"
+            onClick={() => customersQuery.refetch()}
+            disabled={customersQuery.isFetching}
+            title="Müşterileri yenile"
+            className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCcw
+              size={16}
+              className={
+                customersQuery.isFetching
+                  ? "animate-spin"
+                  : ""
+              }
+            />
+            Yenile
+          </button>
+        </div>
+      </Card>
 
       <Card
-  title={`Toplam ${filteredCustomers.length} müşteri bulundu`}
->
-  <DataTable
-    columns={columns}
-    data={filteredCustomers}
-    loading={
-      customersQuery.isLoading ||
-      parameterValuesQuery.isLoading
-    }
-    emptyText="Müşteri bulunamadı."
-    totalCount={filteredCustomers.length}
-  />
-</Card>
+        title={`Toplam ${filteredCustomers.length} müşteri bulundu`}
+      >
+        <DataTable
+          columns={columns}
+          data={filteredCustomers}
+          loading={
+            customersQuery.isLoading ||
+            parameterValuesQuery.isLoading
+          }
+          emptyText="Müşteri bulunamadı."
+          totalCount={filteredCustomers.length}
+        />
+      </Card>
 
       {showCreatePanel && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-end">
@@ -643,14 +683,32 @@ export default function CustomersPage() {
               <TextInput label="Ad" value={firstName} onChange={setFirstName} />
               <TextInput label="Soyad" value={lastName} onChange={setLastName} />
               <TextInput label="Firma Adı" value={companyName} onChange={setCompanyName} />
-              <TextInput label="Vergi No / TCKN" value={taxNumber} onChange={setTaxNumber} required />
+              {/* <TextInput label="Vergi No" value={taxNumber} onChange={setTaxNumber} required />
+              <TextInput label="TCKN" value={nationalId} onChange={setNationalId} required /> */}
+              {customerType === "1" && (
+                <TextInput
+                  label="T.C. Kimlik No"
+                  value={nationalId}
+                  onChange={setNationalId}
+                  required
+                />
+              )}
+
+              {customerType === "2" && (
+                <TextInput
+                  label="Vergi No"
+                  value={taxNumber}
+                  onChange={setTaxNumber}
+                  required
+                />
+              )}
               <TextInput label="Email" value={email} onChange={setEmail} type="email" required />
               <TextInput label="Telefon" value={phoneNumber} onChange={setPhoneNumber} required />
               <LocationSelector
-                              value={location}
-                              onChange={setLocation}
-                              showCountry={false}
-                            />
+                value={location}
+                onChange={setLocation}
+                showCountry={false}
+              />
 
               <TextInput
                 label="Açık Adres"
@@ -665,6 +723,7 @@ export default function CustomersPage() {
               )}
 
               <button
+                type="submit"
                 disabled={createMutation.isPending}
                 className="w-full h-12 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-60"
               >
